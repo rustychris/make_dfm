@@ -1,0 +1,99 @@
+Seems to work on OSX, though I had to export DYLD_LIBRARY_PATH
+in order for it to find libmetis.dylib
+
+But actually running it, it is getting some library issues,
+
+     rusty@Rustys-MBP:~/src/steinberger/dfm/runs/test00$ ~/src/dfm/r52184-opt/bin/dflowfm --autostartstop flowfm.mdu 
+     ** WARNING: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+     dyld: lazy symbol binding failed: Symbol not found: _nf_open_
+       Referenced from: /Users/rusty/src/dfm/r52184-opt/lib/libnetcdff.5.dylib
+       Expected in: flat namespace
+     
+     dyld: Symbol not found: _nf_open_
+       Referenced from: /Users/rusty/src/dfm/r52184-opt/lib/libnetcdff.5.dylib
+       Expected in: flat namespace
+     
+     rusty@Rustys-MBP:~/src/steinberger/dfm/runs/test00$ 
+     
+But...
+
+     rusty@Rustys-MBP:~/src/dfm/r52184-opt/lib$ nm -g libnetcdff.5.dylib | grep nf_open
+                      U _nf_open_
+     0000000000001800 T _nf_open__
+     rusty@Rustys-MBP:~/src/dfm/r52184-opt/lib$ 
+     
+So there is a problem with a trailing underscore?  But it is both referenced and 
+defined here.
+
+f90/netcdf.f90 appears to be the source of _nf_open_,
+  include "netcdf_externals.f90"
+
+and fortran/fort-control.c is the source of _nf_open__.
+in there, there are references to nf_open, nf__open, nf__open_mp
+
+the compilation log shows fort-control compiled as:
+
+Is it possible that it needs FCFLAGS_f90 ???
+
+Hmm - some of the files in f90 seemed very stale. Is it possible that was causing issues?
+libtool: compile:  gfortran-7 -Df2cFortran -c netcdf.f90  -fno-common -o .libs/netcdf.o
+
+
+But it's the other reference that's causing issues.
+
+It gets compiled with:
+gcc-7 -DHAVE_CONFIG_H -I. -I..  -DDLL_EXPORT  -Df2cFortran -I/Users/rusty/src/dfm/r52184-opt/include  -g -O2 -MT fort-control.o -MD -MP -MF $depbase.Tpo -c -o fort-control.o fort-control.c
+
+Searching for hints in the source:
+fort-control.c:
+  config.h: 
+       /* Turned on by netCDF configure. */
+       /* #undef f2cFortran */
+  ncfortran.h:
+    netcdf_f.h
+
+Trace back through the actual definition:
+
+[LN is the fortran name, nf_open]
+
+FCALLSCFUN3(NF_INT, nc_open, NF_OPEN, nf_open,
+	    STRING, FINT2CINT, PNCID)
+cfortran.h:2412:#define FCALLSCFUN3( T0,CN,UN,LN,T1,T2,T3) \
+    FCALLSCFUN5 (T0,CN,UN,LN,T1,T2,T3,CF_0,CF_0)
+=>
+FCALLSCFUN10(T0,CN,UN,LN,T1,T2,T3,T4,T5,CF_0,CF_0,CF_0,CF_0,CF_0)    
+       ==>14...
+
+==>
+
+#define FCALLSCFUN14(T0,CN,UN,LN,T1,T2,T3,T4,T5,T6,T7,T8,T9,TA,TB,TC,TD,TE)    \
+                                 CFextern _(T0,_cfF)(UN,LN)                    \
+ CFARGT14(NCF,DCF,ABSOFT_cf2(T0),T1,T2,T3,T4,T5,T6,T7,T8,T9,TA,TB,TC,TD,TE) )  \
+ {                 CFARGT14S(QCF,T1,T2,T3,T4,T5,T6,T7,T8,T9,TA,TB,TC,TD,TE)    \
+  _Icf(2,UU,T0,A0,0); _Icf(0,L,T0,0,0)      CN(    TCF(LN,T1,1,0)  TCF(LN,T2,2,1) \
+    TCF(LN,T3,3,1)  TCF(LN,T4,4,1) TCF(LN,T5,5,1)  TCF(LN,T6,6,1)  TCF(LN,T7,7,1) \
+    TCF(LN,T8,8,1)  TCF(LN,T9,9,1) TCF(LN,TA,10,1) TCF(LN,TB,11,1) TCF(LN,TC,12,1) \
+    TCF(LN,TD,13,1) TCF(LN,TE,14,1) );                          _Icf(0,K,T0,0,0) \
+                   CFARGT14S(RCF,T1,T2,T3,T4,T5,T6,T7,T8,T9,TA,TB,TC,TD,TE)  _(T0,_cfI) }
+
+whoa.  
+
+This could be useful:
+CFextern _(T0,_cfF)(UN,LN)         
+
+the preprocessor turns that into
+
+CFextern NF_INT_cfF(NF_OPEN,nf_open)
+
+cfortran.h itself should be defining f2cFortran
+
+Actually removing -Df2cFortran in the gcc-7 spits out fort-control.o
+with _nf_open_
+
+What if I drop that from CPPFLAGS in the top Makefile?  
+But it gets added into config.h
+
+Somehow
+
+
+What about a newer netcd version?

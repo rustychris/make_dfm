@@ -1,0 +1,38 @@
+diff -crB openmpi-1.10.2/configure openmpi-1.10.2-rh/configure
+*** openmpi-1.10.2/configure	2016-01-21 10:15:17.000000000 -0800
+--- openmpi-1.10.2-rh/configure	2018-02-25 11:20:33.000000000 -0800
+***************
+*** 62597,62603 ****
+  
+  
+  
+! for ac_func in asprintf snprintf vasprintf vsnprintf openpty isatty getpwuid fork waitpid execve pipe ptsname setsid mmap tcgetpgrp posix_memalign strsignal sysconf syslog vsyslog regcmp regexec regfree _NSGetEnviron socketpair strncpy_s usleep mkfifo dbopen dbm_open statfs statvfs setpgid  setenv
+  do :
+    as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+  ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+--- 62597,62603 ----
+  
+  
+  
+! for ac_func in asprintf snprintf vasprintf vsnprintf openpty isatty getpwuid fork waitpid execve pipe ptsname setsid mmap tcgetpgrp posix_memalign strsignal sysconf regcmp regexec regfree _NSGetEnviron socketpair strncpy_s usleep mkfifo dbopen dbm_open statfs statvfs setpgid  setenv
+  do :
+    as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+  ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+diff -crB openmpi-1.10.2/opal/include/opal_config.h.in openmpi-1.10.2-rh/opal/include/opal_config.h.in
+*** openmpi-1.10.2/opal/include/opal_config.h.in	2016-01-21 10:13:57.000000000 -0800
+--- openmpi-1.10.2-rh/opal/include/opal_config.h.in	2018-02-25 12:27:29.000000000 -0800
+***************
+*** 2798,2803 ****
+--- 2798,2809 ----
+  /* C type corresponding to Fortran REAL */
+  #undef ompi_fortran_real_t
+  
++ /* RH: attempted Sierra work-around */
++ #define LOG_WARNING 0
++ #define LOG_ERR  0
++ #define LOG_DEBUG 0
++ #define LOG_NOTICE 0
++ #define LOG_INFO 0
+  
+  #include "opal_config_bottom.h"
+  #endif /* OPAL_CONFIG_H */
