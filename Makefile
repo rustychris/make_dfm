@@ -1,10 +1,20 @@
+# Per-build configurable options:
+# Root folder where DFM and supporting libraries will be installed.
+# will create bin, lib, include, etc. subfolders below here
 PREFIX=$(HOME)/src/dfm/r52184-opt
-BUILD=$(PREFIX)/build
 
-CC=gcc-7
-CXX=g++-7
-FC=gfortran-7
+CC=gcc
+CXX=g++
+FC=gfortran
+
+# If this is set to something other than $(PREFIX), use a precompiled
+# mpi library
+MPI_PREFIX=/share/apps/openmpi-2.1.2/gcc7
+
+# Generally should not need to edit below here
+
 F77=$(FC)
+BUILD=$(PREFIX)/build
 
 # may have to back off on these for petsc, which wants mpi-*
 export PATH := $(PREFIX)/bin:$(PATH)
@@ -26,6 +36,9 @@ all: build-netcdf46 build-netcdff44 build-openmpi build-petsc build-metis build-
 
 print-%:
 	@echo '$*=$($*)'
+
+print-env:
+	export
 
 check-compiler:
 	@echo Is this at least 4.9?
@@ -103,6 +116,7 @@ OMPI_BUILD=$(BUILD)/openmpi
 OMPI_TGZ=$(OMPI_BUILD)/openmpi-1.10.1.tar.gz
 OMPI_SRC=$(OMPI_BUILD)/openmpi-1.10.2
 
+MPI_PREFIX ?= $(PREFIX)
 # use this sort of command for the patch:
 # diff -crB dir_original dir_updated > dfile.patch
 
@@ -135,7 +149,7 @@ $(PETSC_TGZ):
 # even clearing their values, it still complains, but does not abort
 build-petsc: $(PETSC_TGZ) # build-openmpi
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
-	cd $(PETSC_SRC) && CXX= CC= FC= F77= ./configure --prefix=$(PREFIX) --with-mpi-dir=$(PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
+	cd $(PETSC_SRC) && CXX= CC= FC= F77= ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) install
 
@@ -147,9 +161,14 @@ $(METIS_TGZ):
 	mkdir -p $(METIS_BUILD)
 	wget -O $(METIS_TGZ) http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
 
+# make -C silently adds a -w flag, and that confuses the metis sub-make.
+# --no-print-directory drops the -w flag for sub-makes, and while it still appears in
+# the sub-make's MAKEFLAGS and MFLAGS, perhaps the double-dash avoids issues.
 build-metis: $(METIS_TGZ)
 	cd $(METIS_BUILD) && tar xzvf $(METIS_TGZ)
-	cd $(METIS_SRC) && make config shared=1 cc=$(CC) prefix=$(PREFIX) && make && make install
+	cd $(METIS_SRC) && make config shared=1 cc=$(CC) prefix=$(PREFIX)
+	make --no-print-directory -C $(METIS_SRC) all
+	make --no-print-directory -C $(METIS_SRC) install
 
 DFM_BUILD=$(BUILD)/dfm
 # Rather than checking out code from SVN, use this tree which has a minor bug fix
