@@ -2,6 +2,7 @@
 # Root folder where DFM and supporting libraries will be installed.
 # will create bin, lib, include, etc. subfolders below here
 PREFIX=$(HOME)/src/dfm/r52184-opt
+DFM_ORIG_SRC=$(HOME)/src/dfm-source/unstruc-r52184
 
 CC=gcc
 CXX=g++
@@ -174,7 +175,6 @@ DFM_BUILD=$(BUILD)/dfm
 # Rather than checking out code from SVN, use this tree which has a minor bug fix
 # NB: trailing slash is added below in rsync command to copy the files inside unstruc
 # into the build/dfm/unstruc directory
-DFM_ORIG_SRC=$(HOME)/src/dfm/unstruc
 DFM_SRC=$(DFM_BUILD)/unstruc
 
 PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
@@ -182,14 +182,20 @@ DFLOWFMROOT=$(PREFIX)
 
 export PKG_CONFIG_PATH DFLOWFMROOT
 
+MPIF90=$(MPI_PREFIX)/bin/mpif90
+MPICC=$(MPI_PREFIX)/bin/mpicc 
+
+# Change this to '-O0 -g' for a debug build
+OPT = -O3
+
 build-dfm:
 	mkdir -p $(DFM_BUILD)
 	rsync -rvlP --exclude .svn $(DFM_ORIG_SRC)/ $(DFM_SRC)
 	# in previous script these were exported
-	cd $(DFM_SRC) && FC=$(PREFIX)/bin/mpif90 F77=$(PREFIX)/bin/mpif90 CC=$(PREFIX)/bin/mpicc ./autogen.sh
-	cd $(DFM_SRC)/third_party_open/kdtree2 && FC=$(PREFIX)/bin/mpif90 F77=$(PREFIX)/bin/mpif90 CC=$(PREFIX)/bin/mpicc ./autogen.sh
+	cd $(DFM_SRC) && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
+	cd $(DFM_SRC)/third_party_open/kdtree2 && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
 	# last time gave -g for all flags
-	cd $(DFM_SRC) && CFLAGS=-O3 CXXFLAGS=-O3 FCFLAGS=-O3 FFLAGS=-O3 NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(PREFIX) --with-petsc --with-metis=$(PREFIX)
+	cd $(DFM_SRC) && CFLAGS=$(OPT) CXXFLAGS=$(OPT) FCFLAGS=$(OPT) FFLAGS=$(OPT) NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --with-petsc --with-metis=$(PREFIX)
 	$(MAKE) -C $(DFM_SRC)
 	$(MAKE) -C $(DFM_SRC) install
 
