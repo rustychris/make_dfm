@@ -170,7 +170,7 @@ build-dfm:
 	cd $(DFM_SRC) && FC=$(PREFIX)/bin/mpif90 F77=$(PREFIX)/bin/mpif90 CC=$(PREFIX)/bin/mpicc ./autogen.sh
 	cd $(DFM_SRC)/third_party_open/kdtree2 && FC=$(PREFIX)/bin/mpif90 F77=$(PREFIX)/bin/mpif90 CC=$(PREFIX)/bin/mpicc ./autogen.sh
 	# last time gave -g for all flags
-	cd $(DFM_SRC) && CFLAGS=-O3 CXXFLAGS=-O3 FCFLAGS=-O3 FFLAGS=-O3 NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(PREFIX) --with-petsc --with-metis=$(PREFIX)
+	cd $(DFM_SRC) && CFLAGS="-O3 -I$(PREFIX)/include" CXXFLAGS="-I$(PREFIX)/include -O3" FCFLAGS=-O3 FFLAGS=-O3 NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(PREFIX) --with-petsc --with-metis=$(PREFIX)
 	$(MAKE) -C $(DFM_SRC)
 	$(MAKE) -C $(DFM_SRC) install
 
