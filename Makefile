@@ -1,8 +1,8 @@
 # Per-build configurable options:
 # Root folder where DFM and supporting libraries will be installed.
 # will create bin, lib, include, etc. subfolders below here
-PREFIX=$(HOME)/src/dfm/r52184-opt
-DFM_ORIG_SRC=$(HOME)/src/dfm-source/unstruc-r52184
+PREFIX=$(HOME)/src/dfm/r53925-dbg
+DFM_ORIG_SRC=$(HOME)/src/dfm-source/unstruc-r53925
 
 CC=gcc
 CXX=g++
@@ -14,6 +14,9 @@ MPI_PREFIX=/share/apps/openmpi-2.1.2/gcc7
 
 # Generally should not need to edit below here
 
+# petsc requires its configure script run by python 2, which on modern
+# systems is labeled directly
+PYTHON2=python2
 F77=$(FC)
 BUILD=$(PREFIX)/build
 
@@ -31,8 +34,6 @@ ifeq ($(UNAME_S),Darwin)
     endif
 endif
 
-
-#all: build-netcdf build-netcdff build-openmpi build-petsc build-metis build-dfm
 all: build-netcdf46 build-netcdff44 build-openmpi build-petsc build-metis build-dfm
 
 print-%:
@@ -150,7 +151,7 @@ $(PETSC_TGZ):
 # even clearing their values, it still complains, but does not abort
 build-petsc: $(PETSC_TGZ) # build-openmpi
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
-	cd $(PETSC_SRC) && CXX= CC= FC= F77= ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
+	cd $(PETSC_SRC) && CXX= CC= FC= F77= $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) install
 
@@ -185,8 +186,8 @@ export PKG_CONFIG_PATH DFLOWFMROOT
 MPIF90=$(MPI_PREFIX)/bin/mpif90
 MPICC=$(MPI_PREFIX)/bin/mpicc 
 
-# Change this to '-O0 -g' for a debug build
-OPT = -O3
+OPT = -O0 -g # debug build
+# OPT = -O3
 
 build-dfm:
 	mkdir -p $(DFM_BUILD)
@@ -195,7 +196,7 @@ build-dfm:
 	cd $(DFM_SRC) && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
 	cd $(DFM_SRC)/third_party_open/kdtree2 && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
 	# last time gave -g for all flags
-	cd $(DFM_SRC) && CFLAGS=$(OPT) CXXFLAGS=$(OPT) FCFLAGS=$(OPT) FFLAGS=$(OPT) NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --with-petsc --with-metis=$(PREFIX)
+	cd $(DFM_SRC) && CFLAGS="$(OPT)" CXXFLAGS="$(OPT)" METIS_CFLAGS="-I$(PREFIX)/include" FCFLAGS="$(OPT)" FFLAGS="$(OPT)" NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --with-petsc --with-metis=$(PREFIX)
 	$(MAKE) -C $(DFM_SRC)
 	$(MAKE) -C $(DFM_SRC) install
 
