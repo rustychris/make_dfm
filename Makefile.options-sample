@@ -1,0 +1,15 @@
+# Per-build configurable options:
+# Root folder where DFM and supporting libraries will be installed.
+# will create bin, lib, include, etc. subfolders below here
+PREFIX=$(HOME)/src/dfm/r52184-opt
+
+CC=gcc
+CXX=g++
+FC=gfortran
+
+# If this is set to something other than $(PREFIX), use a precompiled
+# mpi library
+# HPC1: MPI_PREFIX=/share/apps/openmpi-2.1.2/gcc7
+
+# OSX, with brew-supplied libuuid, needs this
+WAQ_LDFLAGS=-L/usr/local/lib
