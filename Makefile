@@ -1,16 +1,4 @@
-# Per-build configurable options:
-# Root folder where DFM and supporting libraries will be installed.
-# will create bin, lib, include, etc. subfolders below here
-PREFIX=$(HOME)/src/dfm/r53925-dbg
-DFM_ORIG_SRC=$(HOME)/src/dfm-source/unstruc-r53925
-
-CC=gcc
-CXX=g++
-FC=gfortran
-
-# If this is set to something other than $(PREFIX), use a precompiled
-# mpi library
-MPI_PREFIX=/share/apps/openmpi-2.1.2/gcc7
+include Makefile.options
 
 # Generally should not need to edit below here
 
@@ -193,12 +181,44 @@ build-dfm:
 	mkdir -p $(DFM_BUILD)
 	rsync -rvlP --exclude .svn $(DFM_ORIG_SRC)/ $(DFM_SRC)
 	# in previous script these were exported
-	cd $(DFM_SRC) && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
-	cd $(DFM_SRC)/third_party_open/kdtree2 && FC=$(MPIF90) F77=$(MPIF90) CC=$(MPICC) ./autogen.sh
+	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
+	cd "$(DFM_SRC)/third_party_open/kdtree2" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
 	# last time gave -g for all flags
-	cd $(DFM_SRC) && CFLAGS="$(OPT)" CXXFLAGS="$(OPT)" METIS_CFLAGS="-I$(PREFIX)/include" FCFLAGS="$(OPT)" FFLAGS="$(OPT)" NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --with-petsc --with-metis=$(PREFIX)
+	cd "$(DFM_SRC)" && CFLAGS="$(OPT) -I'$(PREFIX)/include'" CXXFLAGS="$(OPT) -I'$(PREFIX)/include'" METIS_CFLAGS="-I$(PREFIX)/include" FCFLAGS="$(OPT)" FFLAGS="$(OPT)" NETCDF_FORTRAN_CFLAGS="-I$(PREFIX)/include" NETCDF_FORTRAN_LIBS="-L'$(PREFIX)/lib' -lnetcdf -lnetcdff" ./configure --prefix="$(PREFIX)" --with-mpi-dir="$(MPI_PREFIX)" --with-petsc --with-metis="$(PREFIX)"
 	$(MAKE) -C $(DFM_SRC)
 	$(MAKE) -C $(DFM_SRC) install
 
 
 # previous mpi library problems resolved by include --enable-mpi-fortran.
+
+
+DWAQ_BUILD=$(BUILD)/dwaq
+# Rather than checking out code from SVN, use this tree which has a minor bug fix
+# no trailing slash
+DWAQ_ORIG_SRC=$(HOME)/src/dfm/delft3d-src/delft3d-7545
+DWAQ_SRC=$(DWAQ_BUILD)/delft3d
+
+# Seems wasteful to copy .svn over, but the version number script depends on it
+copy-dwaq:
+	-rm -rf "$(DWAQ_BUILD)" # start clean
+	mkdir -p $(DWAQ_BUILD)
+	rsync -rvlP --exclude .git $(DWAQ_ORIG_SRC)/ $(DWAQ_SRC)
+
+# At least on OSX, there are some headers in NEFIS which duplicate symbols due to missing
+# extern keywords.  This patch fixes that.
+# also had to add a define in gp.c for lseek
+# Now get an error about malloc.h not found - fixed in jspost.c
+patch-dwaq:
+	#patch -d "$(DWAQ_SRC)/src/utils_lgpl/nefis/packages/nefis/include/" -p1 < dwaq_externs.patch
+	patch -d "$(DWAQ_SRC)/src/utils_lgpl/" -p1 < dwaq_utils_lgpl.patch
+
+# This also requires on OSX installing ossp-uuid, perhaps via brew install ossp-uuid
+compile-dwaq: 
+	cd "$(DWAQ_SRC)/src" && FC="$(FC)" F77="$(FC)" CC="$(CC)" ./autogen.sh
+	cd "$(DWAQ_SRC)/src" && LDFLAGS="$(WAQ_LDFLAGS)" CFLAGS="-O3 -I$(PREFIX)/include" CXXFLAGS="-I$(PREFIX)/include -O3" FCFLAGS=-O3 FFLAGS=-O3 NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-netcdf 
+	$(MAKE) -C "$(DWAQ_SRC)/src"
+	$(MAKE) -C $(DWAQ_SRC)/src install
+
+build-dwaq: copy-dwaq patch-dwaq compile-dwaq
+
+# Ready to test the full process
