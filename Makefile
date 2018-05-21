@@ -42,6 +42,7 @@ clean:
 	-rm -r $(OMPI_SRC)
 	-rm -r $(PETSC_SRC)
 	-rm -r $(METIS_SRC)
+	-rm -r $(DFM_SRC)
 	-rm -r $(PREFIX)/{bin,lib,include,conf,etc,share}
 
 NC_BUILD=$(BUILD)/netcdf
@@ -111,6 +112,9 @@ MPI_PREFIX ?= $(PREFIX)
 # diff -crB dir_original dir_updated > dfile.patch
 
 build-openmpi:
+ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+	@echo "Using precompiled MPI $(MPI_PREFIX)"
+else
 	mkdir -p $(OMPI_BUILD)
 	[ -f $(OMPI_TGZ) ] || wget -O $(OMPI_TGZ) https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.gz
 	cd $(OMPI_BUILD) && tar xzvf $(OMPI_TGZ)
@@ -119,6 +123,7 @@ build-openmpi:
 	cd $(OMPI_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --disable-vt
 	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2
 	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2 install
+endif
 
 PETSC_BUILD=$(BUILD)/petsc
 PETSC_TGZ=$(PETSC_BUILD)/petsc-3.4.0.tar.gz
@@ -177,9 +182,12 @@ MPICC=$(MPI_PREFIX)/bin/mpicc
 OPT = -O0 -g # debug build
 # OPT = -O3
 
-build-dfm:
-	mkdir -p $(DFM_BUILD)
-	rsync -rvlP --exclude .svn $(DFM_ORIG_SRC)/ $(DFM_SRC)
+copy-dfm:
+	mkdir -p "$(DFM_BUILD)"
+	-rm -rf "$(DFM_SRC)"
+	rsync -rvlP --exclude .svn "$(DFM_ORIG_SRC)/" "$(DFM_SRC)" || (mkdir "$(DFM_SRC)" ; cp -r "$(DFM_ORIG_SRC)"/* "$(DFM_SRC)")
+
+build-dfm: copy-dfm 
 	# in previous script these were exported
 	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
 	cd "$(DFM_SRC)/third_party_open/kdtree2" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
@@ -187,7 +195,6 @@ build-dfm:
 	cd "$(DFM_SRC)" && CFLAGS="$(OPT) -I'$(PREFIX)/include'" CXXFLAGS="$(OPT) -I'$(PREFIX)/include'" METIS_CFLAGS="-I$(PREFIX)/include" FCFLAGS="$(OPT)" FFLAGS="$(OPT)" NETCDF_FORTRAN_CFLAGS="-I$(PREFIX)/include" NETCDF_FORTRAN_LIBS="-L'$(PREFIX)/lib' -lnetcdf -lnetcdff" ./configure --prefix="$(PREFIX)" --with-mpi-dir="$(MPI_PREFIX)" --with-petsc --with-metis="$(PREFIX)"
 	$(MAKE) -C $(DFM_SRC)
 	$(MAKE) -C $(DFM_SRC) install
-
 
 # previous mpi library problems resolved by include --enable-mpi-fortran.
 
