@@ -110,7 +110,7 @@ OMPI_SRC=$(OMPI_BUILD)/openmpi-1.10.2
 MPI_PREFIX ?= $(PREFIX)
 # use this sort of command for the patch:
 # diff -crB dir_original dir_updated > dfile.patch
-
+# on hpc1, need --without-verbs to avoid compilation issues
 build-openmpi:
 ifneq "$(MPI_PREFIX)" "$(PREFIX)"
 	@echo "Using precompiled MPI $(MPI_PREFIX)"
@@ -120,7 +120,7 @@ else
 	cd $(OMPI_BUILD) && tar xzvf $(OMPI_TGZ)
 	if [ "$(SIERRA)" = "1" ] ; then patch -d $(OMPI_SRC) -p1 < openmpi-sierra.patch ; fi
 	# 2016-07-19, added --enable-mpi-fortran here
-	cd $(OMPI_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --disable-vt
+	cd $(OMPI_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --disable-vt --without-verbs
 	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2
 	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2 install
 endif
