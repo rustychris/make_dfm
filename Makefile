@@ -42,8 +42,8 @@ clean:
 	-rm -r $(OMPI_SRC)
 	-rm -r $(PETSC_SRC)
 	-rm -r $(METIS_SRC)
-	-rm -r $(DFM_SRC)
-	-rm -r $(PREFIX)/{bin,lib,include,conf,etc,share}
+	-rm -rf $(DFM_SRC)
+	-rm -r $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/include $(PREFIX)/conf $(PREFIX)/etc $(PREFIX)/share
 
 NC_BUILD=$(BUILD)/netcdf
 NC_TGZ=$(NC_BUILD)/netcdf-4.2.1.tar.gz
