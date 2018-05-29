@@ -1,0 +1,61 @@
+diff -Naur unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_data/src/Makefile.am unstruc-r53925/utils_gpl/morphology/packages/morphology_data/src/Makefile.am
+--- unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_data/src/Makefile.am	2018-05-25 12:20:08.363417872 -0700
++++ unstruc-r53925/utils_gpl/morphology/packages/morphology_data/src/Makefile.am	2018-05-26 13:54:03.643544979 -0700
+@@ -17,8 +17,10 @@
+ FINCLUDES += \
+ 	-I$(top_builddir)/utils_lgpl/deltares_common/packages/deltares_common/include
+ 
++#RH: attempt to reuse the existing m_tables module.
+ FMODULES += \
+-	-I$(top_builddir)/utils_lgpl/deltares_common/packages/deltares_common/src
++	-I$(top_builddir)/utils_lgpl/deltares_common/packages/deltares_common/src \
++	-I$(top_builddir)/utils/channel_flow/packages/channel_flow_core/src
+ 
+ #-------------------------------------------------------------------------------
+ #Sources
+diff -Naur unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_data/src/morphology_data_module.f90 unstruc-r53925/utils_gpl/morphology/packages/morphology_data/src/morphology_data_module.f90
+--- unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_data/src/morphology_data_module.f90	2018-05-25 12:20:08.364417871 -0700
++++ unstruc-r53925/utils_gpl/morphology/packages/morphology_data/src/morphology_data_module.f90	2018-05-27 09:34:45.481298990 -0700
+@@ -36,7 +36,7 @@
+ use precision
+ use handles, only:handletype
+ use properties, only:tree_data
+-use m_tables, only:t_table
++use m_tables_common, only:t_table
+ private
+ 
+ !
+diff -Naur unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_io/src/ini_noderel.f90 unstruc-r53925/utils_gpl/morphology/packages/morphology_io/src/ini_noderel.f90
+--- unstruc-r53925-orig/utils_gpl/morphology/packages/morphology_io/src/ini_noderel.f90	2018-05-25 12:20:08.373417869 -0700
++++ unstruc-r53925/utils_gpl/morphology/packages/morphology_io/src/ini_noderel.f90	2018-05-27 09:35:09.336306058 -0700
+@@ -428,7 +428,7 @@
+    use precision
+    use morphology_data_module, only : CHARLEN, t_nodefraction, t_noderelation
+    use string_module, only:str_lower
+-   use m_tables
++   use m_tables_common
+    use messageHandling
+    
+    ! Global variables
+@@ -578,4 +578,4 @@
+ 
+ end function CheckNodeRelations   
+ 
+-end module m_ini_noderel
+\ No newline at end of file
++end module m_ini_noderel
+diff -Naur unstruc-r53925-orig/utils_lgpl/deltares_common/packages/deltares_common/src/m_tables.f90 unstruc-r53925/utils_lgpl/deltares_common/packages/deltares_common/src/m_tables.f90
+--- unstruc-r53925-orig/utils_lgpl/deltares_common/packages/deltares_common/src/m_tables.f90	2018-05-25 12:20:08.896417726 -0700
++++ unstruc-r53925/utils_lgpl/deltares_common/packages/deltares_common/src/m_tables.f90	2018-05-27 09:33:54.852303034 -0700
+@@ -1,4 +1,4 @@
+-module m_tables
++module m_tables_common
+ !----- LGPL --------------------------------------------------------------------
+ !                                                                               
+ !  Copyright (C)  Stichting Deltares, 2011-2017.                                
+@@ -712,4 +712,4 @@
+    
+    end function CombineTables
+ 
+-end module m_tables
++end module m_tables_common
