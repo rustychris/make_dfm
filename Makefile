@@ -179,7 +179,7 @@ export PKG_CONFIG_PATH DFLOWFMROOT
 MPIF90=$(MPI_PREFIX)/bin/mpif90
 MPICC=$(MPI_PREFIX)/bin/mpicc 
 
-OPT = -O0 -g # debug build
+OPT ?= -O0 -g # debug build
 # OPT = -O3
 
 copy-dfm:
