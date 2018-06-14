@@ -2,6 +2,8 @@
 # Root folder where DFM and supporting libraries will be installed.
 # will create bin, lib, include, etc. subfolders below here
 PREFIX=$(HOME)/src/dfm/r52184-opt
+DFM_ORIG_SRC=$(HOME)/src/dfm-source/unstruc-r53925
+
 
 CC=gcc
 CXX=g++
