@@ -177,7 +177,7 @@ DFLOWFMROOT=$(PREFIX)
 export PKG_CONFIG_PATH DFLOWFMROOT
 
 MPIF90=$(MPI_PREFIX)/bin/mpif90
-MPICC=$(MPI_PREFIX)/bin/mpicc 
+MPICC=$(MPI_PREFIX)/bin/mpicc
 
 OPT ?= -O0 -g # debug build
 # OPT = -O3
@@ -187,7 +187,15 @@ copy-dfm:
 	-rm -rf "$(DFM_SRC)"
 	rsync -rvlP --exclude .svn "$(DFM_ORIG_SRC)/" "$(DFM_SRC)" || (mkdir "$(DFM_SRC)" ; cp -r "$(DFM_ORIG_SRC)"/* "$(DFM_SRC)")
 
-build-dfm: copy-dfm 
+# Need a better way to manage patches -- there is a need to track patches which apply to a range
+# of subversion revisions.  Currently there are:
+# m_tables_workaround: applicable after about 53210
+# zbndu: applicable somewhere after 52184, and probably fails much after 53925?
+patch-dfm:
+	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-m_tables_workaround.patch ; fi
+	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
+
+build-dfm: copy-dfm patch-dfm
 	# in previous script these were exported
 	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
 	cd "$(DFM_SRC)/third_party_open/kdtree2" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
@@ -202,7 +210,6 @@ build-dfm: copy-dfm
 DWAQ_BUILD=$(BUILD)/dwaq
 # Rather than checking out code from SVN, use this tree which has a minor bug fix
 # no trailing slash
-DWAQ_ORIG_SRC=$(HOME)/src/dfm/delft3d-src/delft3d-7545
 DWAQ_SRC=$(DWAQ_BUILD)/delft3d
 
 # Seems wasteful to copy .svn over, but the version number script depends on it

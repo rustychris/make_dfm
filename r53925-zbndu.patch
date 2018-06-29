@@ -1,0 +1,41 @@
+diff -crB src-r53925/src/unstruc.F90 src-r53925-fix_zbndu/src/unstruc.F90
+*** src-r53925/src/unstruc.F90	2018-06-14 07:38:49.741335182 -0700
+--- src-r53925-fix_zbndu/src/unstruc.F90	2018-06-28 18:08:58.737289795 -0700
+***************
+*** 30161,30168 ****
+      LL    = kbndu(3,n)
+      itpbn = kbndu(4,n)
+      call getLbotLtop(LL,Lb,Lt)
+!     
+!     zbndun = zbndu(n)
+      if (alfsmo < 1d0) then
+         zbndun  = alfsmo*zbndun                       ! i.c. smoothing, start from 0
+      endif
+--- 30161,30175 ----
+      LL    = kbndu(3,n)
+      itpbn = kbndu(4,n)
+      call getLbotLtop(LL,Lb,Lt)
+! 
+!     ! RH: This is the original 53925 code:
+!     ! zbndun = zbndu(n)
+! 
+!     ! This was in a comment around 54191, but then omitted maybe as part of
+!     ! getting sedmor to work.  It is necessary to allow zbndu to have multiple
+!     ! layers.
+!     zbndun = zbndu( (n-1)*kmxd +1 )
+! 
+      if (alfsmo < 1d0) then
+         zbndun  = alfsmo*zbndun                       ! i.c. smoothing, start from 0
+      endif
+***************
+*** 39280,39283 ****
+   allocate ( rr   (ndx) , stat=ierr )
+   call aerr('rr   (ndx)', ierr, ndx )  ; rr  = 0    
+  
+!  end subroutine alloc_jacobi
+\ No newline at end of file
+--- 39287,39290 ----
+   allocate ( rr   (ndx) , stat=ierr )
+   call aerr('rr   (ndx)', ierr, ndx )  ; rr  = 0    
+  
+!  end subroutine alloc_jacobi
