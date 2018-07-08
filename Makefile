@@ -56,36 +56,53 @@ build-netcdf:
 	$(MAKE) -C $(NC_BUILD)/netcdf-4.2.1
 	$(MAKE) -C $(NC_BUILD)/netcdf-4.2.1 install
 
-NCF_SRC=$(NC_BUILD)/netcdf-fortran-4.2
-NCF_TGZ=$(NC_BUILD)/netcdf-fortran-4.2.tar.gz
-build-netcdff: # build-netcdf
-	mkdir -p $(NC_BUILD)
-	[ -f $(NCF_TGZ) ] || wget -O $(NCF_TGZ) ftp://ftp.unidata.ucar.edu/pub/netcdf/old/netcdf-fortran-4.2.tar.gz
-	cd $(NC_BUILD) && tar xzvf netcdf-fortran-4.2.tar.gz
-	cd $(NCF_SRC) && FCFLAGS_f90=-Df2cFortran FFLAGS=-Df2cFortran FCFLAGS=-Df2cFortran CPPFLAGS=-I$(PREFIX)/include LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX)
-	$(MAKE) -C $(NC_BUILD)/netcdf-fortran-4.2
-	$(MAKE) -C $(NC_BUILD)/netcdf-fortran-4.2 install
+# NCF_SRC=$(NC_BUILD)/netcdf-fortran-4.2
+# NCF_TGZ=$(NC_BUILD)/netcdf-fortran-4.2.tar.gz
+# build-netcdff: # build-netcdf
+# 	mkdir -p $(NC_BUILD)
+# 	[ -f $(NCF_TGZ) ] || wget -O $(NCF_TGZ) ftp://ftp.unidata.ucar.edu/pub/netcdf/old/netcdf-fortran-4.2.tar.gz
+# 	cd $(NC_BUILD) && tar xzvf netcdf-fortran-4.2.tar.gz
+# 	cd $(NCF_SRC) && FCFLAGS_f90=-Df2cFortran FFLAGS=-Df2cFortran FCFLAGS=-Df2cFortran CPPFLAGS=-I$(PREFIX)/include LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX)
+# 	$(MAKE) -C $(NC_BUILD)/netcdf-fortran-4.2
+# 	$(MAKE) -C $(NC_BUILD)/netcdf-fortran-4.2 install
 
 
-# Trying more recent netcdf:
+# no reason not to use more recent release
+build-netcdf46: build-netcdf461
+
+# # Trying more recent netcdf:
+# NC_BUILD=$(BUILD)/netcdf
+# NC46_TGZ=$(NC_BUILD)/netcdf-4.6.0.tar.gz
+# NC46_SRC=$(NC_BUILD)/netcdf-c-4.6.0
+# build-netcdf46:
+# 	mkdir -p $(NC_BUILD)
+# 	[ -f $(NC46_TGZ) ] || wget -O $(NC46_TGZ) https://github.com/Unidata/netcdf-c/archive/v4.6.0.tar.gz
+# 	cd $(NC_BUILD) && tar xzvf $(NC46_TGZ)
+# 	cd $(NC46_SRC) && ./configure --prefix=$(PREFIX) --disable-netcdf-4 --disable-doxygen --disable-dap
+# 	$(MAKE) -C $(NC46_SRC) check install
+
+
+# Even more recent netcdf:
 NC_BUILD=$(BUILD)/netcdf
-NC46_TGZ=$(NC_BUILD)/netcdf-4.6.0.tar.gz
-NC46_SRC=$(NC_BUILD)/netcdf-c-4.6.0
-build-netcdf46:
+NC461_TGZ=$(NC_BUILD)/netcdf-4.6.1.tar.gz
+NC461_SRC=$(NC_BUILD)/netcdf-c-4.6.1
+build-netcdf461:
 	mkdir -p $(NC_BUILD)
-	[ -f $(NC46_TGZ) ] || wget -O $(NC46_TGZ) https://github.com/Unidata/netcdf-c/archive/v4.6.0.tar.gz
-	cd $(NC_BUILD) && tar xzvf $(NC46_TGZ)
-	cd $(NC46_SRC) && ./configure --prefix=$(PREFIX) --disable-netcdf-4 --disable-doxygen --disable-dap
-	$(MAKE) -C $(NC46_SRC) check install
+	[ -f $(NC461_TGZ) ] || wget -O $(NC461_TGZ) https://github.com/Unidata/netcdf-c/archive/v4.6.1.tar.gz
+	cd $(NC_BUILD) && tar xzvf $(NC461_TGZ)
+	cd $(NC461_SRC) && ./configure --prefix=$(PREFIX) --disable-netcdf-4 --disable-doxygen --disable-dap
+	$(MAKE) -C $(NC461_SRC) check install
 
 
 NCF44_TGZ=$(NC_BUILD)/netcdf-fortran-4.4.4.tar.gz
 NCF44_SRC=$(NC_BUILD)/netcdf-fortran-4.4.4
+# 20180708: --disable-fortran-type-check appears necessary on FARM, as there is some
+#   deeper issue with the configure script.
 build-netcdff44: 
 	mkdir -p $(NC_BUILD)
 	[ -f $(NCF44_TGZ) ] || wget -O $(NCF44_TGZ) ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.4.4.tar.gz
 	cd $(NC_BUILD) && tar xzvf $(NCF44_TGZ)
-	cd $(NCF44_SRC) && CPPFLAGS=-I$(PREFIX)/include LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX)
+	cd $(NCF44_SRC) && CPPFLAGS=-I$(PREFIX)/include CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX) --disable-fortran-type-check
 	$(MAKE) -C $(NCF44_SRC)
 	$(MAKE) -C $(NCF44_SRC) install
 
