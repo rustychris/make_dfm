@@ -1,3 +1,5 @@
+build-mpi: build-mpich
+
 MPICH_BUILD=$(BUILD)/mpich
 MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
 MPICH_SRC=$(MPICH_BUILD)/mpich-3.4.2
@@ -6,16 +8,33 @@ MPI_PREFIX ?= $(PREFIX)
 # use this sort of command for the patch:
 # diff -crB dir_original dir_updated > dfile.patch
 # on hpc1, need --without-verbs to avoid compilation issues
-build-mpich:
 ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+
+build-mpich:
 	@echo "Using precompiled MPI $(MPI_PREFIX)"
+
 else
+
+build-mpich: unpack-mpich compile-mpich check-mpich install-mpich
+
+unpack-mpich:
 	mkdir -p $(MPICH_BUILD)
-	[ -f $(MPICH_TGZ) ] || wget -O $(MPICH_TGZ) https://github.com/pmodels/mpich/releases/download/v3.4.2/mpich-3.4.2.tar.gz 
+	[ -f $(MPICH_TGZ) ] || wget -O $(MPICH_TGZ) https://github.com/pmodels/mpich/releases/download/v3.4.2/mpich-3.4.2.tar.gz
+	-[ -d $(MPICH_SRC) ] && rm -r $(MPICH_SRC)
 	cd $(MPICH_BUILD) && tar xzvf $(MPICH_TGZ)
+
+compile-mpich:
 	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3
 	$(MAKE) -C $(MPICH_SRC)
+
+check-mpich:
+	@echo "MPICH testing disabled as it is slow and inconclusive"
+# This runs a bunch of tests, complains about unexpected output that may or
+# may not be harmless, and some tests time out.
+#$(MAKE) -C $(MPICH_SRC) MPITEST_VERBOSE=0 testing
+
+install-mpich:
 	$(MAKE) -C $(MPICH_SRC) install
+
 endif
 
-build-mpi: build-mpich

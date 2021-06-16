@@ -19,9 +19,11 @@ NC_SRC=$(NC_BUILD)/netcdf-c-4.8.0
 build-netcdfc: # build-hdf5
 	mkdir -p $(NC_BUILD)
 	[ -f $(NC_TGZ) ] || wget -O $(NC_TGZ) $(NC_URL)
+	-[ -d $(NC_SRC) ] && rm -r $(NC_SRC)
 	cd $(NC_BUILD) && tar xzvf $(NC_TGZ)
-	cd $(NC_SRC) && CPPFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib" ./configure  --prefix=/home/rusty/src/dfm/r68819-dbg/ --disable-doxygen --disable-dap
-	$(MAKE) -C $(NC_SRC) check install
+	cd $(NC_SRC) && CPPFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib" ./configure  --prefix=$(PREFIX) --disable-doxygen --disable-dap
+	$(MAKE) -C $(NC_SRC) check
+	$(MAKE) -C $(NC_SRC) install
 
 NCF_TGZ=$(NC_BUILD)/netcdf-fortran-4.5.3.tar.gz
 NCF_SRC=$(NC_BUILD)/netcdf-fortran-4.5.3
@@ -30,7 +32,9 @@ NCF_SRC=$(NC_BUILD)/netcdf-fortran-4.5.3
 build-netcdff: 
 	mkdir -p $(NC_BUILD)
 	[ -f $(NCF_TGZ) ] || wget -O $(NCF_TGZ) https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-fortran-4.5.3.tar.gz
+	-[ -d $(NCF_SRC) ] && rm -r $(NCF_SRC)
 	cd $(NC_BUILD) && tar xzvf $(NCF_TGZ)
 	cd $(NCF_SRC) && CPPFLAGS=-I$(PREFIX)/include CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX)
 	$(MAKE) -C $(NCF_SRC)
+	$(MAKE) -C $(NCF_SRC) check
 	$(MAKE) -C $(NCF_SRC) install

@@ -24,7 +24,6 @@ endif
 
 all: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
 
-
 print-%:
 	@echo '$*=$($*)'
 
@@ -38,8 +37,7 @@ check-compiler:
 clean:
 	-rm -r $(NC_SRC)
 	-rm -r $(NCF_SRC)
-	-rm -r $(OMPI_SRC)
-	-rm -r $(MPICH_SRC)
+	-rm -r $(OMPI_SRC) $(MPICH_SRC)
 	-rm -r $(PETSC_SRC)
 	-rm -r $(METIS_SRC)
 	-rm -rf $(DFM_SRC)
@@ -70,18 +68,16 @@ OPT ?= -O0 -g # debug build
 # OPT = -O3
 
 # retain .svn directories to aid in version_number.h
-copy-dfm:
+# not sure why, but these copy calls are in some of build scripts, and I think it may
+# avoid some compile errors
+unpack-dfm:
 	mkdir -p "$(DFM_BUILD)"
 	-rm -rf "$(DFM_SRC)"
-	rsync -rvlP "$(DFM_ORIG_SRC)/" "$(DFM_SRC)" || (mkdir "$(DFM_SRC)" ; cp -r "$(DFM_ORIG_SRC)"/* "$(DFM_SRC)")
+	cp -r "$(DFM_ORIG_SRC)" "$(DFM_SRC)"
+	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_mpi
+	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_omp
 
-# in previous script FC F77 CC were exported
-
-build-dfm: copy-dfm compile-dfm
-
-# Old rules:
-#	FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" $(MAKE) -C $(DFM_SRC) ds-install
-#       FC="$(MPIF90)" $(MAKE) -k -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
+build-dfm: unpack-dfm compile-dfm
 
 compile-dfm:
 	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh

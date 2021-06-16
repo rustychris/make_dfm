@@ -4,7 +4,10 @@ PETSC_SRC=$(PETSC_BUILD)/petsc-3.4.0
 ifeq ($(UNAME_S),Darwin)
     PETSC_ARCH:=arch-darwin-c-opt
 else
-    PETSC_ARCH:=arch-linux2-c-opt
+    PETSC_DBG=1
+    PETSC_ARCH:=arch-linux2-c-debug
+    #PETSC_DBG=0
+    #PETSC_ARCH:=arch-linux2-c-opt
 endif
 
 fetch-petsc: $(PETSC_TGZ)
@@ -15,8 +18,23 @@ $(PETSC_TGZ):
 # PETSC ignore CC,FC,F77, and will warn if they are present.
 # it even complains if --with-cc=$(CC) --with-fc=$(FC) are specified
 # even clearing their values, it still complains, but does not abort
-build-petsc: $(PETSC_TGZ) # build-openmpi
+# For PETSC I think we test it after install
+build-petsc: unpack-petsc compile-petsc install-petsc check-petsc 
+
+unpack-petsc: $(PETSC_TGZ)
+	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
-	cd $(PETSC_SRC) && CXX= CC= FC= F77= $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
+
+compile-petsc:
+	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -g -O0 -no-prec-div" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
+
+install-petsc:
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) install
+
+check-petsc:
+	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PREFIX) test
+
+
+
+
