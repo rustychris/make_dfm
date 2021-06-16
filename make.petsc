@@ -1,0 +1,22 @@
+PETSC_BUILD=$(BUILD)/petsc
+PETSC_TGZ=$(PETSC_BUILD)/petsc-3.4.0.tar.gz
+PETSC_SRC=$(PETSC_BUILD)/petsc-3.4.0
+ifeq ($(UNAME_S),Darwin)
+    PETSC_ARCH:=arch-darwin-c-opt
+else
+    PETSC_ARCH:=arch-linux2-c-opt
+endif
+
+fetch-petsc: $(PETSC_TGZ)
+$(PETSC_TGZ):
+	mkdir -p $(PETSC_BUILD)
+	wget -O $(PETSC_TGZ) http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.0.tar.gz
+
+# PETSC ignore CC,FC,F77, and will warn if they are present.
+# it even complains if --with-cc=$(CC) --with-fc=$(FC) are specified
+# even clearing their values, it still complains, but does not abort
+build-petsc: $(PETSC_TGZ) # build-openmpi
+	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
+	cd $(PETSC_SRC) && CXX= CC= FC= F77= $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -O3 -no-prec-div" --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3" 
+	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
+	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) install

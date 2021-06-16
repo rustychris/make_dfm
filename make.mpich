@@ -1,0 +1,21 @@
+MPICH_BUILD=$(BUILD)/mpich
+MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
+MPICH_SRC=$(MPICH_BUILD)/mpich-3.4.2
+
+MPI_PREFIX ?= $(PREFIX)
+# use this sort of command for the patch:
+# diff -crB dir_original dir_updated > dfile.patch
+# on hpc1, need --without-verbs to avoid compilation issues
+build-mpich:
+ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+	@echo "Using precompiled MPI $(MPI_PREFIX)"
+else
+	mkdir -p $(MPICH_BUILD)
+	[ -f $(MPICH_TGZ) ] || wget -O $(MPICH_TGZ) https://github.com/pmodels/mpich/releases/download/v3.4.2/mpich-3.4.2.tar.gz 
+	cd $(MPICH_BUILD) && tar xzvf $(MPICH_TGZ)
+	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3
+	$(MAKE) -C $(MPICH_SRC)
+	$(MAKE) -C $(MPICH_SRC) install
+endif
+
+build-mpi: build-mpich

@@ -1,0 +1,16 @@
+
+# 1.12 seems to be too new for netcdf.
+# HDF5_URL=https://www.hdfgroup.org/package/hdf5-1-12-0-tar-gz/?wpdmdl=14582
+
+HDF5_URL=https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.7/src/hdf5-1.10.7.tar.gz
+HDF5_BUILD=$(BUILD)/hdf5
+HDF5_TGZ=$(HDF5_BUILD)/hdf5-1.10.7.tar.gz
+HDF5_SRC=$(HDF5_BUILD)/hdf5-1.10.7
+
+build-hdf5:
+	mkdir -p $(HDF5_BUILD)
+	[ -f $(HDF5_TGZ) ] || wget -O $(HDF5_TGZ) $(HDF5_URL)
+	cd $(HDF5_BUILD) && tar xzvf $(HDF5_TGZ)
+	cd $(HDF5_SRC) && ./configure --prefix=$(PREFIX) --with-default-api-version=v18
+	$(MAKE) -C $(HDF5_SRC) install
+

@@ -1,0 +1,28 @@
+OMPI_BUILD=$(BUILD)/openmpi
+OMPI_TGZ=$(OMPI_BUILD)/openmpi-1.10.1.tar.gz
+OMPI_SRC=$(OMPI_BUILD)/openmpi-1.10.2
+
+MPICH_BUILD=$(BUILD)/mpich
+MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
+
+https://github.com/pmodels/mpich/releases/download/v3.4.2/mpich-3.4.2.tar.gz 
+
+MPI_PREFIX ?= $(PREFIX)
+# use this sort of command for the patch:
+# diff -crB dir_original dir_updated > dfile.patch
+# on hpc1, need --without-verbs to avoid compilation issues
+build-openmpi:
+ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+	@echo "Using precompiled MPI $(MPI_PREFIX)"
+else
+	mkdir -p $(OMPI_BUILD)
+	[ -f $(OMPI_TGZ) ] || wget -O $(OMPI_TGZ) https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.gz
+	cd $(OMPI_BUILD) && tar xzvf $(OMPI_TGZ)
+	if [ "$(SIERRA)" = "1" ] ; then patch -d $(OMPI_SRC) -p1 < openmpi-sierra.patch ; fi
+	# 2016-07-19, added --enable-mpi-fortran here
+	cd $(OMPI_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --disable-vt --without-verbs
+	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2
+	$(MAKE) -C $(OMPI_BUILD)/openmpi-1.10.2 install
+endif
+
+build-mpi: build-openmpi
