@@ -76,8 +76,7 @@ unpack-dfm:
 	cp -r "$(DFM_ORIG_SRC)" "$(DFM_SRC)"
 	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_mpi
 	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_omp
-	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf.patch
-
+	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
 
 build-dfm: unpack-dfm compile-dfm
 
