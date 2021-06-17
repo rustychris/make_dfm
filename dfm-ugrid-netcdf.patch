@@ -1,0 +1,18 @@
+diff -ruN src-orig/engines_gpl/dflowfm/packages/dflowfm_kernel/src/unstruc_netcdf.f90 src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/unstruc_netcdf.f90
+--- src-orig/engines_gpl/dflowfm/packages/dflowfm_kernel/src/unstruc_netcdf.f90	2021-06-16 18:22:36.211974505 -0700
++++ src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/unstruc_netcdf.f90	2021-06-16 18:28:54.312261063 -0700
+@@ -1292,7 +1292,13 @@
+          ! Number of netlinks can be > number of flowlinks, if there are closed edges.
+          numl2d = numl - numl1d
+          ! Write default_value on all remaining edges in 2d mesh (i.e. closed edges).
+-         ierr = nf90_put_var(ncid, id_var(2), (/ default_value /), start = (/ 1, lnx2d+1, id_tsp%idx_curtime /), count = (/ kmx, numl2d - lnx2d, 1 /), map = (/ 0 /)) ! Use map = 0 to write a single value on multiple edges in file.
++         ! ierr = nf90_put_var(ncid, id_var(2), (/ default_value /), start = (/ 1, lnx2d+1, id_tsp%idx_curtime /), count = (/ kmx, numl2d - lnx2d, 1 /), map = (/ 0 /)) ! Use map = 0 to write a single value on multiple edges in file.
++         ! RH: netcdf uses the shape of values to decide the dimension of the map. the above
++         ! code fails because netcdf assumes that it only has to fill in 1 dimension of map
++         ! while the indices require at least two dimensions, since we are writing  multiple
++         ! edges and layers
++         ierr = nf90_put_var(ncid, id_var(2), reshape( (/ default_value /), (/ 1, 1 /), start = (/ 1, lnx2d+1, id_tsp%idx_curtime /), count = (/ kmx, numl2d - lnx2d, 1 /), map = (/ 0, 0 /)) 
++         
+       end if
+ 
+    case(UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.
