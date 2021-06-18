@@ -85,8 +85,13 @@ patch-dfm:
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-m_tables_workaround.patch ; fi
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
 	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
+	patch -d "$(DFM_SRC)" -p1 < init-tEcField-pointers-r68819.patch
 
 build-dfm: unpack-dfm patch-dfm compile-dfm
+
+# Tempting to use -finit-local-zero to possibly sidestep some bad code
+# that assumes values are initialized. But gfortran is too aggressive
+# with this, and it leads to compilation errors.
 
 compile-dfm:
 	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
