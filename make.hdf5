@@ -11,7 +11,7 @@ build-hdf5: unpack-hdf5 compile-hdf5 check-hdf5 install-hdf5
 unpack-hdf5:
 	mkdir -p $(HDF5_BUILD)
 	[ -f $(HDF5_TGZ) ] || wget -O $(HDF5_TGZ) $(HDF5_URL)
-	[ -d $(HDF5_SRC) ] && rm -r $(HDF5_SRC)
+	-[ -d $(HDF5_SRC) ] && rm -r $(HDF5_SRC)
 	cd $(HDF5_BUILD) && tar xzvf $(HDF5_TGZ)
 
 compile-hdf5:
