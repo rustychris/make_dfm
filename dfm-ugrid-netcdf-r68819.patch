@@ -11,7 +11,7 @@ diff -ruN src-orig/engines_gpl/dflowfm/packages/dflowfm_kernel/src/unstruc_netcd
 +         ! code fails because netcdf assumes that it only has to fill in 1 dimension of map
 +         ! while the indices require at least two dimensions, since we are writing  multiple
 +         ! edges and layers
-+         ierr = nf90_put_var(ncid, id_var(2), reshape( (/ default_value /), (/ 1, 1 /), start = (/ 1, lnx2d+1, id_tsp%idx_curtime /), count = (/ kmx, numl2d - lnx2d, 1 /), map = (/ 0, 0 /)) 
++         ierr = nf90_put_var(ncid, id_var(2), reshape( (/ default_value /), (/ 1, 1 /)), start = (/ 1, lnx2d+1, id_tsp%idx_curtime /), count = (/ kmx, numl2d - lnx2d, 1 /), map = (/ 0, 0 /)) 
 +         
        end if
  

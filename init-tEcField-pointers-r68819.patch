@@ -1,0 +1,15 @@
+diff -ruN src-orig/utils_lgpl/ec_module/packages/ec_module/src/ec_typedefs.f90 src/utils_lgpl/ec_module/packages/ec_module/src/ec_typedefs.f90
+--- src-orig/utils_lgpl/ec_module/packages/ec_module/src/ec_typedefs.f90	2021-06-18 07:43:33.321952866 -0700
++++ src/utils_lgpl/ec_module/packages/ec_module/src/ec_typedefs.f90	2021-06-18 07:45:12.149072098 -0700
+@@ -323,8 +323,9 @@
+       integer, dimension(4)                   :: bbox = 1           !< bounding box of column- and row indices used from the complete source grid (only used when reading structured grid meteo fields from netCDF)
+       
+       integer                                 :: issparse=0         !< data in CRS format (1), or not (0)
+-      integer, dimension(:),      pointer     :: ia                 !< CRS sparsity pattern, startpointers, dim(numrows+1)
+-      integer, dimension(:),      pointer     :: ja                 !< CRS sparsity pattern, column numbers, dim(ia(numrows+1)-1)
++      ! RH: initialize pointers to null to avoid gfortran runtime errors
++      integer, dimension(:),      pointer     :: ia => null()       !< CRS sparsity pattern, startpointers, dim(numrows+1)
++      integer, dimension(:),      pointer     :: ja => null()       !< CRS sparsity pattern, column numbers, dim(ia(numrows+1)-1)
+    end type tEcField
+    
+    type tEcFieldPtr

@@ -77,7 +77,6 @@ unpack-dfm:
 	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_mpi
 	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_omp
 
-
 # Need a better way to manage patches -- there is a need to track patches which apply to a range
 # of subversion revisions.  Currently there are:
 # m_tables_workaround: applicable after about 53210
@@ -85,10 +84,14 @@ unpack-dfm:
 patch-dfm:
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-m_tables_workaround.patch ; fi
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
-	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf.patch
-
+	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
+	patch -d "$(DFM_SRC)" -p1 < init-tEcField-pointers-r68819.patch
 
 build-dfm: unpack-dfm patch-dfm compile-dfm
+
+# Tempting to use -finit-local-zero to possibly sidestep some bad code
+# that assumes values are initialized. But gfortran is too aggressive
+# with this, and it leads to compilation errors.
 
 compile-dfm:
 	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
@@ -97,34 +100,4 @@ compile-dfm:
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
 
-# previous mpi library problems resolved by include --enable-mpi-fortran.
-
-DWAQ_BUILD=$(BUILD)/dwaq
-# Rather than checking out code from SVN, use this tree which has a minor bug fix
-# no trailing slash
-DWAQ_SRC=$(DWAQ_BUILD)/delft3d
-
-# Seems wasteful to copy .svn over, but the version number script depends on it
-copy-dwaq:
-	-rm -rf "$(DWAQ_BUILD)" # start clean
-	mkdir -p $(DWAQ_BUILD)
-	rsync -rvlP --exclude .git $(DWAQ_ORIG_SRC)/ $(DWAQ_SRC)
-
-# At least on OSX, there are some headers in NEFIS which duplicate symbols due to missing
-# extern keywords.  This patch fixes that.
-# also had to add a define in gp.c for lseek
-# Now get an error about malloc.h not found - fixed in jspost.c
-patch-dwaq:
-	#patch -d "$(DWAQ_SRC)/src/utils_lgpl/nefis/packages/nefis/include/" -p1 < dwaq_externs.patch
-	patch -d "$(DWAQ_SRC)/src/utils_lgpl/" -p1 < dwaq_utils_lgpl.patch
-
-# This also requires on OSX installing ossp-uuid, perhaps via brew install ossp-uuid
-compile-dwaq: 
-	cd "$(DWAQ_SRC)/src" && FC="$(FC)" F77="$(FC)" CC="$(CC)" ./autogen.sh
-	cd "$(DWAQ_SRC)/src" && LDFLAGS="$(WAQ_LDFLAGS)" CFLAGS="-O3 -I$(PREFIX)/include" CXXFLAGS="-I$(PREFIX)/include -O3" FCFLAGS=-O3 FFLAGS=-O3 NETCDF_FORTRAN_CFLAGS=-I$(PREFIX)/include NETCDF_FORTRAN_LIBS="-L$(PREFIX)/lib -lnetcdf -lnetcdff" ./configure --prefix=$(PREFIX) --with-netcdf 
-	$(MAKE) -C "$(DWAQ_SRC)/src"
-	$(MAKE) -C $(DWAQ_SRC)/src install
-
-build-dwaq: copy-dwaq patch-dwaq compile-dwaq
-
-# Ready to test the full process
+# DWAQ is now part of the regular build
