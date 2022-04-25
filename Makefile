@@ -94,9 +94,15 @@ build-dfm: unpack-dfm patch-dfm compile-dfm
 # with this, and it leads to compilation errors.
 
 compile-dfm:
-	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
+	cd "$(DFM_SRC)" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh --verbose
 	cd "$(DFM_SRC)/third_party_open/kdtree2" && FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" ./autogen.sh
 	cd "$(DFM_SRC)" && CFLAGS="$(OPT) -I'$(PREFIX)/include'" CXXFLAGS="$(OPT) -I'$(PREFIX)/include'" METIS_CFLAGS="-I$(PREFIX)/include" FCFLAGS="$(OPT)" FFLAGS="$(OPT)" NETCDF_FORTRAN_CFLAGS="-I$(PREFIX)/include" NETCDF_FORTRAN_LIBS="-L'$(PREFIX)/lib' -lnetcdf -lnetcdff" ./configure --prefix="$(PREFIX)" --with-mpi-dir="$(MPI_PREFIX)" --with-mpi --with-netcdf --with-petsc --with-metis="$(PREFIX)"
+	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
+	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
+
+
+# To recompile after a small edit
+recompile-dfm:
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
 

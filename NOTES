@@ -95,5 +95,28 @@ But it gets added into config.h
 
 Somehow
 
-
 What about a newer netcd version?
+
+#-----
+
+2021-06-18
+
+cws:   Automatically preparing build ... done
+local: Automatically preparing build ... Warning: autoreconf failed
+ And then I get a ton of warnings, and finally a fail.
+ 
+local: finds an m4 directory,
+  libtoolize: putting auxiliary files in AC_CONFIG_AUX_DIR, 'config'.
+  libtoolize: copying file 'config/ltmain.sh'
+
+cws: does not find an m4 directory
+  aclocal: warning: couldn't open directory 'm4': No such file or directory
+  libtoolize: putting auxiliary files in '../..'.
+  libtoolize: copying file '../../ltmain.sh'
+
+
+(message from aclocal)
+An earlier message *does* find m4, so not sure what's up here.
+
+
+
