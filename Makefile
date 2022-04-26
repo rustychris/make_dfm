@@ -70,12 +70,13 @@ OPT ?= -O0 -g # debug build
 # retain .svn directories to aid in version_number.h
 # not sure why, but these copy calls are in some of build scripts, and I think it may
 # avoid some compile errors
+# Post-reorganization these copies no longer make sense.
 unpack-dfm:
 	mkdir -p "$(DFM_BUILD)"
 	-rm -rf "$(DFM_SRC)"
 	cp -r "$(DFM_ORIG_SRC)" "$(DFM_SRC)"
-	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_mpi
-	cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_omp
+	-cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_mpi
+	-cp $(DFM_SRC)/third_party_open/swan/src/*.[fF]* $(DFM_SRC)/third_party_open/swan/swan_omp
 
 # Need a better way to manage patches -- there is a need to track patches which apply to a range
 # of subversion revisions.  Currently there are:
