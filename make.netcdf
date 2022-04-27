@@ -32,12 +32,13 @@ NCF_URL=https://downloads.unidata.ucar.edu/netcdf-fortran/4.5.4/netcdf-fortran-4
 
 # 20180708: --disable-fortran-type-check appears necessary on FARM, as there is some
 #   deeper issue with the configure script.
+# 20220426: with intel compiler probably need to preserve existing LD_LIBRARY_PATH
 build-netcdff: 
 	mkdir -p $(NC_BUILD)
 	[ -f $(NCF_TGZ) ] || wget -O $(NCF_TGZ) $(NCF_URL)
 	-[ -d $(NCF_SRC) ] && rm -r $(NCF_SRC)
 	cd $(NC_BUILD) && tar xzvf $(NCF_TGZ)
-	cd $(NCF_SRC) && CPPFLAGS=-I$(PREFIX)/include CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH=$(PREFIX)/lib ./configure --prefix=$(PREFIX)
+	cd $(NCF_SRC) && CPPFLAGS=-I$(PREFIX)/include CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH="$(PREFIX)/lib;$(LD_LIBRARY_PATH)" ./configure --prefix=$(PREFIX)
 	$(MAKE) -C $(NCF_SRC)
 	$(MAKE) -C $(NCF_SRC) check
 	$(MAKE) -C $(NCF_SRC) install

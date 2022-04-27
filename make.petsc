@@ -1,6 +1,8 @@
 PETSC_BUILD=$(BUILD)/petsc
-PETSC_TGZ=$(PETSC_BUILD)/petsc-3.4.0.tar.gz
-PETSC_SRC=$(PETSC_BUILD)/petsc-3.4.0
+# 2022-04-26: move from 3.4.0 to 3.13.3 to match the dfm build process
+PETSC_TGZ=$(PETSC_BUILD)/petsc-3.13.3.tar.gz
+PETSC_SRC=$(PETSC_BUILD)/petsc-3.13.3
+
 ifeq ($(UNAME_S),Darwin)
     PETSC_ARCH:=arch-darwin-c-opt
 else
@@ -13,7 +15,7 @@ endif
 fetch-petsc: $(PETSC_TGZ)
 $(PETSC_TGZ):
 	mkdir -p $(PETSC_BUILD)
-	wget -O $(PETSC_TGZ) http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.4.0.tar.gz
+	wget -O $(PETSC_TGZ) http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.3.tar.gz
 
 # PETSC ignore CC,FC,F77, and will warn if they are present.
 # it even complains if --with-cc=$(CC) --with-fc=$(FC) are specified
@@ -25,15 +27,21 @@ unpack-petsc: $(PETSC_TGZ)
 	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
 
+# Used to have -no-prec-div here in FOPTFLAGS
 compile-petsc:
-	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-f-blas-lapack=1 --FOPTFLAGS="-xHOST -g -O0 -no-prec-div" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
+	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -g -O0" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 
 install-petsc:
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) install
 
+#check-petsc:
+#	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PREFIX) test
+
+# I think this is meant to be run on the uninstalled copy?
+# Getting timeout issues.
 check-petsc:
-	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PREFIX) test
+	$(MAKE) -C $(PETSC_SRC) TIMEOUT=480 test
 
 
 

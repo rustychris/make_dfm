@@ -88,7 +88,13 @@ patch-dfm:
 	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
 	patch -d "$(DFM_SRC)" -p1 < init-tEcField-pointers-r68819.patch
 
-build-dfm: unpack-dfm patch-dfm compile-dfm
+patch-dfm-cmake:
+	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
+	cp build-local.sh "$(DFM_SRC)"
+
+
+#build-dfm: unpack-dfm patch-dfm compile-dfm
+build-dfm: unpack-dfm patch-dfm patch-dfm-cmake compile-dfm-cmake
 
 # Tempting to use -finit-local-zero to possibly sidestep some bad code
 # that assumes values are initialized. But gfortran is too aggressive
@@ -101,6 +107,11 @@ compile-dfm:
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
 
+# for FARM, before invoking any of this needs
+# . /share/apps/intel-2019/bin/compilervars.sh intel64
+# module load cmake
+compile-dfm-cmake:
+	cd "$(DFM_SRC)" && ./build-local.sh dflowfm
 
 # To recompile after a small edit
 recompile-dfm:
