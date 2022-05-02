@@ -23,12 +23,22 @@ unpack-mpich:
 	-[ -d $(MPICH_SRC) ] && rm -r $(MPICH_SRC)
 	cd $(MPICH_BUILD) && tar xzvf $(MPICH_TGZ)
 
+# several ways to deal with running under slurm.
+# For now stick with defaults, but may come back to these options
+# --with-slurm=$(SLURM_HOME) --with-pmi=pmi2
+# that failed with not finding pmi.h
+# mpich web page says --with-pmi=slurm (and doesn't mention with-slurm)
+# still can't find pmi.h
+# suck it.
+
 compile-mpich:
-	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3
+	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3 
 	$(MAKE) -C $(MPICH_SRC)
 
 check-mpich:
 	@echo "MPICH testing disabled as it is slow and inconclusive"
+
+
 # This runs a bunch of tests, complains about unexpected output that may or
 # may not be harmless, and some tests time out.
 #$(MAKE) -C $(MPICH_SRC) MPITEST_VERBOSE=0 testing

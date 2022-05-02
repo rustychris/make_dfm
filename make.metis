@@ -9,10 +9,15 @@ $(METIS_TGZ):
 # make -C silently adds a -w flag, and that confuses the metis sub-make.
 # --no-print-directory drops the -w flag for sub-makes, and while it still appears in
 # the sub-make's MAKEFLAGS and MFLAGS, perhaps the double-dash avoids issues.
-build-metis: $(METIS_TGZ)
+build-metis: unpack-metis compile-metis install-metis
+
+unpack-metis: $(METIS_TGZ)
 	-rm -r $(METIS_SRC)
 	cd $(METIS_BUILD) && tar xzvf $(METIS_TGZ)
+compile-metis:
 	cd $(METIS_SRC) && make config shared=1 cc=$(CC) prefix=$(PREFIX)
 	make --no-print-directory -C $(METIS_SRC) all
+        
+install-metis:
 	make --no-print-directory -C $(METIS_SRC) install
 

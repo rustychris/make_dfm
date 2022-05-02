@@ -82,12 +82,15 @@ unpack-dfm:
 # of subversion revisions.  Currently there are:
 # m_tables_workaround: applicable after about 53210
 # zbndu: applicable somewhere after 52184, and probably fails much after 53925?
+# by 2022.03, no longer applicable
+# patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
+# patch -d "$(DFM_SRC)" -p1 < init-tEcField-pointers-r68819.patch
+
 patch-dfm:
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-m_tables_workaround.patch ; fi
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
-	patch -d "$(DFM_SRC)" -p1 < dfm-ugrid-netcdf-r68819.patch
-	patch -d "$(DFM_SRC)" -p1 < init-tEcField-pointers-r68819.patch
 
+# and this is only recently (for 2022.03) applicable
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
@@ -111,7 +114,7 @@ compile-dfm:
 # . /share/apps/intel-2019/bin/compilervars.sh intel64
 # module load cmake
 compile-dfm-cmake:
-	cd "$(DFM_SRC)" && ./build-local.sh dflowfm
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm
 
 # To recompile after a small edit
 recompile-dfm:

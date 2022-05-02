@@ -1,0 +1,23 @@
+Index: src/cmake/CMakeLists.txt
+===================================================================
+--- src/cmake/CMakeLists.txt	(revision 141115)
++++ src/cmake/CMakeLists.txt	(working copy)
+@@ -56,8 +56,8 @@
+ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
+ 
+ # MPI
+-set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
+-#set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
++#set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
++set(OSS_MPI "MPICH" CACHE STRING "MPI library is MPICH")
+ 
+ 
+ if (WIN32)
+@@ -105,7 +105,6 @@
+     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
+     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+ 
+-
+     # Petsc
+     pkg_check_modules(PETSC REQUIRED PETSc)
+ 
