@@ -113,8 +113,13 @@ compile-dfm:
 # for FARM, before invoking any of this needs
 # . /share/apps/intel-2019/bin/compilervars.sh intel64
 # module load cmake
+compile-dfm-cmake-debug:
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm --debug
+	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm_debug/install/lib/libdflowfm.so
+
 compile-dfm-cmake:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm 
+	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
 
 # To recompile after a small edit
 recompile-dfm:

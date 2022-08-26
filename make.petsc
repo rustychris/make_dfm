@@ -6,10 +6,10 @@ PETSC_SRC=$(PETSC_BUILD)/petsc-3.13.3
 ifeq ($(UNAME_S),Darwin)
     PETSC_ARCH:=arch-darwin-c-opt
 else
-    PETSC_DBG=1
-    PETSC_ARCH:=arch-linux2-c-debug
-    #PETSC_DBG=0
-    #PETSC_ARCH:=arch-linux2-c-opt
+    #PETSC_DBG=1
+    #PETSC_ARCH:=arch-linux2-c-debug
+    PETSC_DBG=0
+    PETSC_ARCH:=arch-linux2-c-opt
 endif
 
 fetch-petsc: $(PETSC_TGZ)
@@ -28,8 +28,10 @@ unpack-petsc: $(PETSC_TGZ)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
 
 # Used to have -no-prec-div here in FOPTFLAGS
+# cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -g -O0" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
+
 compile-petsc:
-	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -g -O0" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
+	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -O3" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-xHost -O3" 
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 
 install-petsc:

@@ -31,8 +31,11 @@ unpack-mpich:
 # still can't find pmi.h
 # suck it.
 
+# NOTE: generally we should select --with-device=ch3.
+#  ch3:sock is here because it seems that farm nodes are sometimes oversubscribed
+#  and ch3 (defaulting to ch3:nemesis) performs poorly when oversubscribed
 compile-mpich:
-	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3 
+	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3:sock 
 	$(MAKE) -C $(MPICH_SRC)
 
 check-mpich:
