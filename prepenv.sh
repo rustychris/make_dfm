@@ -1,8 +1,11 @@
 #!/bin/bash 
 
-. /share/apps/intel-2019/bin/compilervars.sh intel64
-module load cmake
-export PATH=/home/rustyh/src/dfm/t140737/bin:$PATH
-export LD_LIBRARY_PATH=/home/rustyh/src/dfm/t140737/lib:$LD_LIBRARY_PATH
-export LIBRARY_PATH=/home/rustyh/src/dfm/t140737/lib:$LIBRARY_PATH
+. /opt/intel/oneapi/setvars.sh intel64
+
+PREFIX=/opt/dfm/t140737
+
+#export PATH=$PREFIX/bin:/opt/intel/oneapi/mpi/latest/bin:$PATH
+export PATH=$PREFIX/bin:$PATH
+export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=$PREFIX/lib:$LIBRARY_PATH
 
