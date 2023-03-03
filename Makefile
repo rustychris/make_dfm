@@ -71,7 +71,7 @@ else
 endif
 
 # OPT ?= -O0 -g # debug build
-OPT = -O3 -fpe1 -xhost
+OPT = -O3
 
 # retain .svn directories to aid in version_number.h
 # not sure why, but these copy calls are in some of build scripts, and I think it may

@@ -27,7 +27,7 @@ build-petsc: unpack-petsc compile-petsc install-petsc check-petsc
 # throw around too much rm -rf.
 unpack-petsc: $(PETSC_TGZ)
 	-rm -rf $(PETSC_SRC)/arch-linux2-c-debug/externalpackages
-	-rm -rf $(PETSC_SRC)
+	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
 
 # Used to have -no-prec-div here in FOPTFLAGS
@@ -35,6 +35,7 @@ unpack-petsc: $(PETSC_TGZ)
 
 # For wclinux, it's possible that KVM and -xHost are not interacting well.
 # -O3 did not solve it.
+
 # OPT_FLAGS="-O3 -xhost"
 OPT_FLAGS="-O3 -xhost -fpe1"
 # OPT_FLAGS="-O0"
