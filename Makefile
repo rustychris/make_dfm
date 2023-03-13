@@ -12,6 +12,9 @@ BUILD=$(PREFIX)/build
 export PATH := $(PREFIX)/bin:$(PATH)
 export CC FC F77 CXX
 
+PKG_CONFIG_PATH := $(PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+export PKG_CONFIG_PATH
+
 # figure out what platform we're on
 UNAME_S := $(shell uname -s)
 UNAME_R := $(shell uname -r)
@@ -61,10 +64,10 @@ DFM_BUILD=$(BUILD)/dfm
 # DFM_ORIG_SRC will be copied to here
 DFM_SRC=$(DFM_BUILD)/src
 
-PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
+
 DFLOWFMROOT=$(PREFIX)
 
-export PKG_CONFIG_PATH DFLOWFMROOT
+export DFLOWFMROOT
 
 ifneq (,$(find string 'oneapi' $(MPI_PREFIX)))
   # weirdly, mpif90 would use gfortran
