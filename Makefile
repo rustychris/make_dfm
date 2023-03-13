@@ -24,6 +24,9 @@ endif
 
 all: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
 
+# By default zlib is not built since many systems have it already.
+
+
 print-%:
 	@echo '$*=$($*)'
 
@@ -44,6 +47,8 @@ clean:
 	-rm -r $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/include $(PREFIX)/conf $(PREFIX)/etc $(PREFIX)/share
 
 include make.netcdf
+
+include make.zlib
 
 # include make.openmpi
 include make.mpich
@@ -100,7 +105,7 @@ patch-dfm:
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
-	which module >& /dev/null || cp module-nop.sh $(PREFIX)/bin/module
+	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm
@@ -126,7 +131,7 @@ compile-dfm-cmake-debug:
 
 # Had been getting line truncation issues, but this appears to be working.
 compile-dfm-cmake:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) FC="$(MPIF90)" ./build-local.sh dflowfm 
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dflowfm 
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
 
 # To recompile after a small edit

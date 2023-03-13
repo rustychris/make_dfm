@@ -1,5 +1,10 @@
 build-mpi: build-mpich
 
+# mpich doesn't like conda's extra env variables
+unexport F90
+unexport F77
+unexport F95
+
 MPICH_BUILD=$(BUILD)/mpich
 MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
 MPICH_SRC=$(MPICH_BUILD)/mpich-3.4.2

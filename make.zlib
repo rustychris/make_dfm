@@ -1,0 +1,27 @@
+# 4.6.1 might also work with hdf 1.10.
+# It segfaulted with hdf 1.12, and netcdf 4.8.0 failed a test
+# with 1.12.
+
+ZLIB_BUILD=$(BUILD)/zlib
+
+ZLIB_URL=https://zlib.net/zlib-1.2.13.tar.gz
+ZLIB_TGZ=$(ZLIB_BUILD)/zlib-1.2.13.tar.gz
+ZLIB_SRC=$(ZLIB_BUILD)/zlib-1.2.13
+
+build-zlib: unpack-zlib compile-zlib install-zlib
+
+unpack-zlib:
+	mkdir -p $(ZLIB_BUILD)
+	[ -f $(ZLIB_TGZ) ] || wget -O $(ZLIB_TGZ) $(ZLIB_URL)
+	-[ -d $(ZLIB_SRC) ] && rm -r $(ZLIB_SRC)
+	cd $(ZLIB_BUILD) && tar xzvf $(ZLIB_TGZ)
+
+compile-zlib:
+	$(MAKE) -C $(ZLIB_SRC) distclean
+	cd $(ZLIB_SRC) && CPPFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib" ./configure  --prefix=$(PREFIX)
+	$(MAKE) -C $(ZLIB_SRC) 
+
+install-zlib:
+	$(MAKE) -C $(ZLIB_SRC) install
+
+

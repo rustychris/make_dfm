@@ -26,7 +26,7 @@ build-petsc: unpack-petsc compile-petsc install-petsc check-petsc
 # There are some git checkouts that need -f to delete. But I'd rather not
 # throw around too much rm -rf.
 unpack-petsc: $(PETSC_TGZ)
-	-rm -rf $(PETSC_SRC)/arch-linux2-c-debug/externalpackages
+	-rm -rf $(PETSC_SRC)/arch-linux2-c-*/externalpackages
 	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
 
