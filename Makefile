@@ -107,6 +107,7 @@ patch-dfm:
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
 
 # and this is only recently (for 2022.03) applicable
+# dfm_bmi.patch: issue with length of string arguments.
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
 	svn patch dfm_bmi.patch "$(DFM_SRC)"
@@ -142,9 +143,24 @@ compile-dfm-cmake:
 	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dflowfm 
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
 
+compile-dwaq-cmake:
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dwaq
+
 # To recompile after a small edit
 recompile-dfm:
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
 
-# DWAQ is now part of the regular build
+# DFM build puts everything down some levels. note that this does re-copy a bunch of libraries
+# that were copied out of this same place...
+# TODO: Really should only copy the libraries that are required. DFM decides to "install"
+# every binary dependency it can find.
+install-dfm:
+	cp -rv $(PREFIX)/build/dfm/src/build_dflowfm/install/bin $(PREFIX)
+	cp -rv $(PREFIX)/build/dfm/src/build_dflowfm/install/lib $(PREFIX)
+	rm $(PREFIX)/build/dfm/src/build_dflowfm/install/lib $(PREFIX)/lib/libc.so.6
+
+install-dwaq:
+	cp -rv $(PREFIX)/build/dfm/src/build_dwaq/install/bin $(PREFIX)
+	cp -rv $(PREFIX)/build/dfm/src/build_dwaq/install/lib $(PREFIX)
+	cp -rv $(PREFIX)/build/dfm/src/build_dwaq/install/share $(PREFIX)
