@@ -1,0 +1,6 @@
+At least on chicago there are very few dev dependencies installed.
+Try using conda to satisfy the library dependendcies, and also simplify
+
+
+
+conda create -n dfm_t140737 python=3

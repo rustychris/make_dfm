@@ -28,7 +28,7 @@ endif
 all: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
 
 # By default zlib is not built since many systems have it already.
-
+# likewise for proj
 
 print-%:
 	@echo '$*=$($*)'
@@ -52,6 +52,8 @@ clean:
 include make.netcdf
 
 include make.zlib
+include make.proj
+
 
 # include make.openmpi
 include make.mpich
