@@ -109,12 +109,15 @@ patch-dfm:
 # and this is only recently (for 2022.03) applicable
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
+	svn patch dfm_bmi.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
+	[ -d $(PREFIX)/bin ] || mkdir -p $(PREFIX)/bin
 	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm
 build-dfm: unpack-dfm patch-dfm patch-dfm-cmake compile-dfm-cmake
+
 
 # Tempting to use -finit-local-zero to possibly sidestep some bad code
 # that assumes values are initialized. But gfortran is too aggressive
@@ -131,12 +134,12 @@ compile-dfm:
 # . /share/apps/intel-2019/bin/compilervars.sh intel64
 # module load cmake
 compile-dfm-cmake-debug:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm --debug
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" ./build-local.sh dflowfm --debug
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm_debug/install/lib/libdflowfm.so
 
 # Had been getting line truncation issues, but this appears to be working.
 compile-dfm-cmake:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dflowfm 
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dflowfm 
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
 
 # To recompile after a small edit

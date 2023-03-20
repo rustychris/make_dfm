@@ -1,0 +1,35 @@
+Index: src/engines_gpl/dflowfm/packages/dflowfm_lib/src/unstruc_bmi.F90
+===================================================================
+--- src/engines_gpl/dflowfm/packages/dflowfm_lib/src/unstruc_bmi.F90	(revision 141645)
++++ src/engines_gpl/dflowfm/packages/dflowfm_lib/src/unstruc_bmi.F90	(working copy)
+@@ -3338,8 +3338,11 @@
+    character(kind=c_char), intent(in)       :: c_netfile_out(MAXSTRLEN)
+    integer(c_int), intent(in)               :: c_npart
+    integer(c_int), intent(in)               :: c_jacontiguous
+-   character(len=strlen(c_netfile_in))      :: netfile_in
+-   character(len=strlen(c_netfile_out))     :: netfile_out
++   !RH orig character(len=strlen(c_netfile_in))      :: netfile_in
++   !RH orig character(len=strlen(c_netfile_out))     :: netfile_out
++   character(len=MAXSTRLEN)         :: netfile_in
++   character(len=MAXSTRLEN)         :: netfile_out
++   ! /RH
+    integer                                  :: npart
+    integer                                  :: jacontiguous
+    integer                                  :: istat
+@@ -3402,9 +3405,13 @@
+    character(kind=c_char), intent(in)       :: c_netfile_in(MAXSTRLEN)
+    character(kind=c_char), intent(in)       :: c_netfile_out(MAXSTRLEN)
+    character(kind=c_char), intent(in)       :: c_polfile(MAXSTRLEN)
+-   character(len=strlen(c_netfile_in))      :: netfile_in
+-   character(len=strlen(c_netfile_out))     :: netfile_out
+-   character(len=strlen(c_polfile))         :: polfile
++   !RH orig character(len=strlen(c_netfile_in))      :: netfile_in
++   !RH orig character(len=strlen(c_netfile_out))     :: netfile_out
++   !RH orig character(len=strlen(c_polfile))         :: polfile
++   character(len=MAXSTRLEN)      :: netfile_in
++   character(len=MAXSTRLEN)     :: netfile_out
++   character(len=MAXSTRLEN)         :: polfile
++   ! /RH
+    integer                                  :: minp,istat
+    
+    netfile_in = char_array_to_string(c_netfile_in, strlen(c_netfile_in))

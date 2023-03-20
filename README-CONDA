@@ -1,6 +1,49 @@
 At least on chicago there are very few dev dependencies installed.
-Try using conda to satisfy the library dependendcies, and also simplify
+Try using conda to satisfy the library dependendcies, and may also simplify
+using DFM/DWAQ.
+
+The intel compilers are supposed to be binary compatible with gnu compilers.
+
+conda create -n dfm_t140737 python=3 libnetcdf netcdf-fortran zlib proj libtiff gdal libuuid
+
+(strictly speaking it might be sufficient to just get libgdal, but it will be useful down
+ the road to have the python bindings)
+
+Originally tried to have conda install metis, but there were some compile issues with dfm.
+Well, not so fast. Using local compile gave identical results.
+
+unstruct_bmi.F90: 
+subroutine write_partition_metis(c_netfile_in, c_netfile_out, c_npart, c_jacontiguous) bind(C, name="write_partition_metis")
+
+character(kind=c_char), intent(in)       :: c_netfile_in(MAXSTRLEN)
+
+The argument is over MAXSTRLEN I think.
+
+Earlier in unstruc_bmi.F90:
+  integer(c_int), BIND(C, name="MAXSTRLEN") :: MAXSTRLEN = 1024
+
+Hmm - I figured write_partition_metis was somehow from metis, but it's not.
 
 
 
-conda create -n dfm_t140737 python=3
+conda activate dfm_t140737
+
+make build-mpich
+make build-petsc (one test fails, about 6400 pass, some are skipped)
+
+For some reason conda doesn't add itself to PKG_CONFIG_PATH. This should be fixed now
+in prepenv.sh. Alternatively this will do it:
+
+  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$CONDA_PREFIX/lib/pkgconfig
+
+but prepenv.sh also sets LD_LIBRARY_PATH and LIBRARY_PATH which are needed in later steps.
+
+ifort cannot use gfortran's module files. 
+
+make build-dfm
+
+
+conda can supply libuuid, but dfm isn't finding it.
+
+
+
