@@ -23,15 +23,28 @@ $(PETSC_TGZ):
 # For PETSC I think we test it after install
 build-petsc: unpack-petsc compile-petsc install-petsc check-petsc 
 
+# There are some git checkouts that need -f to delete. But I'd rather not
+# throw around too much rm -rf.
 unpack-petsc: $(PETSC_TGZ)
+	-rm -rf $(PETSC_SRC)/arch-linux2-c-*/externalpackages
 	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
 
 # Used to have -no-prec-div here in FOPTFLAGS
 # cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -g -O0" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
 
+# For wclinux, it's possible that KVM and -xHost are not interacting well.
+# -O3 did not solve it.
+
+# OPT_FLAGS="-O3 -xhost"
+# OPT_FLAGS="-O3 -xhost -fpe1"
+OPT_FLAGS="-O3"
+# OPT_FLAGS="-O0"
+
+# Specifying CFLAGS and --with-cpp here are to get around icc announcing its deprecation.
+# that sees to upset the configuration process.
 compile-petsc:
-	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -O3" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-xHost -O3" 
+	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS=$(OPT_FLAGS) --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS=$(OPT_FLAGS) --CFLAGS="-diag-disable=10441" --with-cpp="icc -E -diag-disable=10441"
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 
 install-petsc:

@@ -1,3 +1,12 @@
+NETCDF_PREFIX ?= $(PREFIX)
+
+ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+
+build-netcdf:
+	@echo "Using precompiled netCDF $(NETCDF_PREFIX)"
+
+else
+
 build-netcdf: build-netcdfc build-netcdff
 
 include make.hdf5
@@ -48,10 +57,25 @@ unpack-netcdff:
 	-[ -d $(NCF_SRC) ] && rm -r $(NCF_SRC)
 	cd $(NC_BUILD) && tar xzvf $(NCF_TGZ)
 
+NETCDFC_PREFIX ?= $(PREFIX)
+
+# Wondering if this would still work if I just left it to pkgconfig.
+ifneq "$(NETCDFC_PREFIX)" "$(PREFIX)"
+NCF_CPPFLAGS=-I$(PREFIX)/include -I$(NETCDFC_PREFIX)/include
+NCF_LDFLAGS=-L$(PREFIX)/lib -L$(NETCDFC_PREFIX)/lib
+NCF_LD_LIBRARY_PATH="$(PREFIX)/lib:$(LD_LIBRARY_PATH):$(NETCDFC_PREFIX)/lib"
+else
+NCF_CPPFLAGS=-I$(PREFIX)/include
+NCF_LDFLAGS=-L$(PREFIX)/lib
+NCF_LD_LIBRARY_PATH="$(PREFIX)/lib:$(LD_LIBRARY_PATH)"
+endif
+
 compile-netcdff:
-	cd $(NCF_SRC) && CPPFLAGS=-I$(PREFIX)/include CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS=-L$(PREFIX)/lib LD_LIBRARY_PATH="$(PREFIX)/lib;$(LD_LIBRARY_PATH)" ./configure --prefix=$(PREFIX)
+	cd $(NCF_SRC) && CPPFLAGS="$(NCF_CPPFLAGS)" CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS="$(NCF_LDFLAGS)" LD_LIBRARY_PATH="$(NCF_LD_LIBRARY_PATH)" ./configure --prefix=$(PREFIX)
 	$(MAKE) -C $(NCF_SRC)
-	$(MAKE) -C $(NCF_SRC) check
+	LD_LIBRARY_PATH=$(NCF_LD_LIBRARY_PATH) $(MAKE) -C $(NCF_SRC) check
 
 install-netcdff:
 	$(MAKE) -C $(NCF_SRC) install
+
+endif

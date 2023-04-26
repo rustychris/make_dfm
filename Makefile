@@ -12,6 +12,14 @@ BUILD=$(PREFIX)/build
 export PATH := $(PREFIX)/bin:$(PATH)
 export CC FC F77 CXX
 
+# prepping for directly calling dfm cmake
+METIS_DIR=$(PREFIX)
+export METIS_DIR
+export PREFIX
+
+PKG_CONFIG_PATH := $(PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+export PKG_CONFIG_PATH
+
 # figure out what platform we're on
 UNAME_S := $(shell uname -s)
 UNAME_R := $(shell uname -r)
@@ -23,6 +31,9 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 all: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
+
+# By default zlib is not built since many systems have it already.
+# likewise for proj
 
 print-%:
 	@echo '$*=$($*)'
@@ -45,6 +56,10 @@ clean:
 
 include make.netcdf
 
+include make.zlib
+include make.proj
+
+
 # include make.openmpi
 include make.mpich
 
@@ -56,16 +71,22 @@ DFM_BUILD=$(BUILD)/dfm
 # DFM_ORIG_SRC will be copied to here
 DFM_SRC=$(DFM_BUILD)/src
 
-PKG_CONFIG_PATH=$(PREFIX)/lib/pkgconfig
+
 DFLOWFMROOT=$(PREFIX)
 
-export PKG_CONFIG_PATH DFLOWFMROOT
+export DFLOWFMROOT
 
-MPIF90=$(MPI_PREFIX)/bin/mpif90
-MPICC=$(MPI_PREFIX)/bin/mpicc
+ifneq (,$(find string 'oneapi' $(MPI_PREFIX)))
+  # weirdly, mpif90 would use gfortran
+  MPIF90=$(MPI_PREFIX)/bin/mpiifort
+  MPICC=$(MPI_PREFIX)/bin/mpicc
+else
+  MPIF90=$(MPI_PREFIX)/bin/mpif90
+  MPICC=$(MPI_PREFIX)/bin/mpicc
+endif
 
-OPT ?= -O0 -g # debug build
-# OPT = -O3
+# OPT ?= -O0 -g # debug build
+OPT = -O3
 
 # retain .svn directories to aid in version_number.h
 # not sure why, but these copy calls are in some of build scripts, and I think it may
@@ -91,13 +112,18 @@ patch-dfm:
 	if (svn info $(DFM_ORIG_SRC) | grep 'Revision: 53925' > /dev/null) ; then patch -d $(DFM_SRC) -p1 < r53925-zbndu.patch ; fi
 
 # and this is only recently (for 2022.03) applicable
+# dfm_bmi.patch: issue with length of string arguments.
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
+	svn patch dfm_bmi.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
+	[ -d $(PREFIX)/bin ] || mkdir -p $(PREFIX)/bin
+	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm
 build-dfm: unpack-dfm patch-dfm patch-dfm-cmake compile-dfm-cmake
+
 
 # Tempting to use -finit-local-zero to possibly sidestep some bad code
 # that assumes values are initialized. But gfortran is too aggressive
@@ -114,16 +140,81 @@ compile-dfm:
 # . /share/apps/intel-2019/bin/compilervars.sh intel64
 # module load cmake
 compile-dfm-cmake-debug:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm --debug
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" ./build-local.sh dflowfm --debug
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm_debug/install/lib/libdflowfm.so
 
-compile-dfm-cmake:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm 
-	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
+# Had been getting line truncation issues, but this appears to be working.
+# The build-local.sh stuff feels unnecessary. It's just wrapping some cmake calls and we're
+# better off calling them directly to have more control over the process.
+
+# This is the way using a modified version of their build script:
+# compile-dfm-cmake:
+# 	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dflowfm 
+# 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
+# 
+# compile-dwaq-cmake:
+# 	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dwaq --debug
+
+DFM_BUILD_SUFFIX=""
+DFM_CMAKE_BUILD_DIR=$(DFM_SRC)/build_dflowfm$(DFM_BUILD_SUFFIX)
+DFM_GENERATOR="Unix Makefiles"
+DFM_BUILDTYPE=Release
+DFM_ENV=CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" CC="$(MPICC)" CXX="$(MPICC)" FFLAGS="-ffree-line-length-512"
+
+# configurationType is "dflowfm"
+# This line is the equivalent of build-local.sh dflowfm
+compile-dfm-cmake: dfm_CreateCMakedir dfm_DoCMake dfm_BuildCMake dfm_InstallAll
+
+dfm_CreateCMakedir:
+	rm -rf $(DFM_CMAKE_BUILD_DIR)
+	mkdir  $(DFM_CMAKE_BUILD_DIR)
+
+dfm_DoCMake:
+	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
+
+dfm_BuildCMake:
+	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) make VERBOSE=1 install
+
+dfm_InstallAll:
+	echo "makefile does not do the InstallAll business"
+
+#     if [ ${1} = "all"  ]; then
+#         echo
+#         echo "Installing in build_$1$2 ..."
+#         cd     $root
+#         rm -rf $root/build_$1$2/lnx64
+#         mkdir -p $root/build_$1$2/lnx64/bin
+#         mkdir -p $root/build_$1$2/lnx64/lib
+#         mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin
+#         mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7
+# 
+#         # CMaked stuff
+#         cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
+# 
+#         # Additional step to copy ESMF stuff needed by D-WAVES
+#         cp -rf $root/src/third_party_open/esmf/lnx64/bin/ESMF_RegridWeightGen                          $root/build_$1$2/lnx64/bin                               &>/dev/null
+#         cp -rf $root/src/third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh   $root/build_$1$2/lnx64/bin                               &>/dev/null
+#         cp -rf $root/src/third_party_open/esmf/lnx64/bin/lib*                                          $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin      &>/dev/null
+#         cp -rf $root/src/third_party_open/esmf/lnx64/bin_COS7/lib*                                     $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7 &>/dev/null
+#     fi
+
 
 # To recompile after a small edit
 recompile-dfm:
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC) ds-install
 	$(MAKE) FC="$(MPIF90)" F77="$(MPIF90)" CC="$(MPICC)" -C $(DFM_SRC)/engines_gpl/dflowfm ds-install 
 
-# DWAQ is now part of the regular build
+recompile-dfm-cmake: dfm_BuildCMake dfm_InstallAll
+
+# DFM build puts everything down some levels. note that this does re-copy a bunch of libraries
+# that were copied out of this same place...
+# TODO: Really should only copy the libraries that are required. DFM decides to "install"
+# every binary dependency it can find.
+install-dfm:
+	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dflowfm/install/ $(PREFIX)
+
+install-dwaq:
+	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dwaq/install/ $(PREFIX)
+
+install-dwaq-debug:
+	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dwaq_debug/install/ $(PREFIX)

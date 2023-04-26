@@ -1,5 +1,10 @@
 build-mpi: build-mpich
 
+# mpich doesn't like conda's extra env variables
+unexport F90
+unexport F77
+unexport F95
+
 MPICH_BUILD=$(BUILD)/mpich
 MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
 MPICH_SRC=$(MPICH_BUILD)/mpich-3.4.2
@@ -15,7 +20,7 @@ build-mpich:
 
 else
 
-build-mpich: unpack-mpich compile-mpich check-mpich install-mpich
+build-mpich: unpack-mpich compile-mpich install-mpich
 
 unpack-mpich:
 	mkdir -p $(MPICH_BUILD)
@@ -32,14 +37,17 @@ unpack-mpich:
 # suck it.
 
 # NOTE: generally we should select --with-device=ch3.
-#  ch3:sock is here because it seems that farm nodes are sometimes oversubscribed
+#  ch3:sock is maybe worthwhile on farm since nodes are sometimes oversubscribed
 #  and ch3 (defaulting to ch3:nemesis) performs poorly when oversubscribed
+#  but now ch4 is available.  will try that for wclinux. all petsc tests are
+#  failing, revert to ch3:nemesis. Works.
+# Now trying the 'enable-fast' build
 compile-mpich:
-	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3:sock 
+	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3:nemesis --enable-fast=all,O3
 	$(MAKE) -C $(MPICH_SRC)
 
 check-mpich:
-	@echo "MPICH testing disabled as it is slow and inconclusive"
+	$(MAKE) -C $(MPICH_SRC) testing
 
 
 # This runs a bunch of tests, complains about unexpected output that may or

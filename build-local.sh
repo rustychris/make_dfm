@@ -255,7 +255,10 @@ root=$scriptdir
 #    exit 1
 #fi
 
-export FC=mpifort
+# Funky syntax to set default
+# Any chance I can pass a flag here?
+: "${FC:=mpifort}"
+export FC
 export CXX=mpicxx
 export CC=mpicc
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -276,6 +279,8 @@ if [ "$prepareonly" = "1" ]; then
     exit 0
 fi
 
+# apparently the version of mpif90 I'm using doesn't like long lines.
+# need to figure out how to pass -ffree-line-length-0 to the fortran compiler.
 echo About to call BuildCMake
 BuildCMake ${config} ${buildDirExtension}
 

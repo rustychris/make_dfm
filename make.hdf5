@@ -14,8 +14,13 @@ unpack-hdf5:
 	-[ -d $(HDF5_SRC) ] && rm -r $(HDF5_SRC)
 	cd $(HDF5_BUILD) && tar xzvf $(HDF5_TGZ)
 
+# HDF5 has trouble finding zlib in PREFIX.
+
+HDF5_CONFARGS=$(shell [ -f $(PREFIX)/lib/pkgconfig/zlib.pc ] && echo --with-zlib=$(PREFIX) )
+
 compile-hdf5:
-	cd $(HDF5_SRC) && ./configure --prefix=$(PREFIX) --with-default-api-version=v18
+	echo $(HDF5_CONFARGS)
+	cd $(HDF5_SRC) && ./configure --prefix=$(PREFIX) --with-default-api-version=v18 $(HDF5_CONFARGS)
 	$(MAKE) -C $(HDF5_SRC)
 
 check-hdf5:
