@@ -119,4 +119,15 @@ cws: does not find an m4 directory
 An earlier message *does* find m4, so not sure what's up here.
 
 
+#-----
+
+2023-04-28
+
+PETSC compiles and installs, but many of the tests are failing. This
+appears to be due to the tests including extraneous profiling
+information in the output, which is then compared to expected output
+that doesn't have the profiling information.  Might be related to how
+logging is being handled. I didn't see any particular errors in
+running the script, so maybe it's just an issue with the diff'ing
+afterwards.
 

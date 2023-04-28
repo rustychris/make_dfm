@@ -114,12 +114,14 @@ patch-dfm:
 
 # and this is only recently (for 2022.03) applicable
 # dfm_bmi.patch: issue with length of string arguments.
+# sys/sysctl.h: removed in glibc 2.32. Unclear whether this will work
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
 	svn patch dfm_bmi.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
 	[ -d $(PREFIX)/bin ] || mkdir -p $(PREFIX)/bin
 	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
+	touch $(PREFIX)/include/sys/sysctl.h
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm

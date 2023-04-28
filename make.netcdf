@@ -1,6 +1,6 @@
 NETCDF_PREFIX ?= $(PREFIX)
 
-ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+ifneq "$(NETCDF_PREFIX)" "$(PREFIX)"
 
 build-netcdf:
 	@echo "Using precompiled netCDF $(NETCDF_PREFIX)"

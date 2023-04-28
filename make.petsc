@@ -19,6 +19,8 @@ else
     PETSC_ARCH:=arch-linux-c-opt
 endif
 
+# For PETSC I think we test it after install
+build-petsc: unpack-petsc compile-petsc install-petsc check-petsc 
 
 fetch-petsc-git: $(PETSC_SRC)/.git
 
@@ -34,8 +36,6 @@ $(PETSC_TGZ):
 # PETSC ignore CC,FC,F77, and will warn if they are present.
 # it even complains if --with-cc=$(CC) --with-fc=$(FC) are specified
 # even clearing their values, it still complains, but does not abort
-# For PETSC I think we test it after install
-build-petsc: unpack-petsc compile-petsc install-petsc check-petsc 
 
 # There are some git checkouts that need -f to delete. But I'd rather not
 # throw around too much rm -rf.
@@ -48,7 +48,6 @@ unpack-petsc-git: $(PETSC_SRC)/.git
 	cd $(PETSC_SRC) && git checkout $(PETSC_TAG)
 	cd $(PETSC_SRC) && git reset --hard
 	cd $(PETSC_SRC) && git clean -dfx .
-
 
 unpack-petsc: unpack-petsc-git
 	@echo Done with unpack
