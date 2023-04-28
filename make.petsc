@@ -1,7 +1,11 @@
 PETSC_BUILD=$(BUILD)/petsc
 # 2022-04-26: move from 3.4.0 to 3.13.3 to match the dfm build process
-PETSC_TGZ=$(PETSC_BUILD)/petsc-3.13.3.tar.gz
-PETSC_SRC=$(PETSC_BUILD)/petsc-3.13.3
+# 2023-04-28: bump to 3.13.6 to skirt python 3.9+ compatibility issue
+#   and go to git-based retrieval
+#PETSC_TGZ=$(PETSC_BUILD)/petsc-3.13.3.tar.gz
+#PETSC_SRC=$(PETSC_BUILD)/petsc-3.13.3
+PETSC_TAG=v3.13.6
+PETSC_SRC=$(PETSC_BUILD)/petsc
 
 ifeq ($(UNAME_S),Darwin)
     PETSC_ARCH:=arch-darwin-c-opt
@@ -9,10 +13,20 @@ else
     #PETSC_DBG=1
     #PETSC_ARCH:=arch-linux2-c-debug
     PETSC_DBG=0
-    PETSC_ARCH:=arch-linux2-c-opt
+    # PETSC_ARCH:=arch-linux2-c-opt
+    # On farm it looks like it has to be linux, not linux2. Unclear on the
+    # distinction
+    PETSC_ARCH:=arch-linux-c-opt
 endif
 
-fetch-petsc: $(PETSC_TGZ)
+
+fetch-petsc-git: $(PETSC_SRC)/.git
+
+$(PETSC_SRC)/.git:
+	mkdir -p $(PETSC_BUILD)
+	git clone -b $(PETSC_TAG) https://gitlab.com/petsc/petsc.git $(PETSC_BUILD)/petsc
+
+fetch-petsc-tgz: $(PETSC_TGZ)
 $(PETSC_TGZ):
 	mkdir -p $(PETSC_BUILD)
 	wget -O $(PETSC_TGZ) http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.13.3.tar.gz
@@ -25,10 +39,19 @@ build-petsc: unpack-petsc compile-petsc install-petsc check-petsc
 
 # There are some git checkouts that need -f to delete. But I'd rather not
 # throw around too much rm -rf.
-unpack-petsc: $(PETSC_TGZ)
-	-rm -rf $(PETSC_SRC)/arch-linux2-c-*/externalpackages
+unpack-petsc-tgz: $(PETSC_TGZ)
+	-rm -rf $(PETSC_SRC)/$(PETSC_ARCH)/externalpackages
 	-rm -r $(PETSC_SRC)
 	cd $(PETSC_BUILD) && tar xzvf $(PETSC_TGZ)
+
+unpack-petsc-git: $(PETSC_SRC)/.git
+	cd $(PETSC_SRC) && git checkout $(PETSC_TAG)
+	cd $(PETSC_SRC) && git reset --hard
+	cd $(PETSC_SRC) && git clean -dfx .
+
+
+unpack-petsc: unpack-petsc-git
+	@echo Done with unpack
 
 # Used to have -no-prec-div here in FOPTFLAGS
 # cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS="-xHOST -g -O0" --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS="-g -O0" 
@@ -44,7 +67,7 @@ OPT_FLAGS="-O3"
 # Specifying CFLAGS and --with-cpp here are to get around icc announcing its deprecation.
 # that sees to upset the configuration process.
 compile-petsc:
-	cd $(PETSC_SRC) && unset CXX CC FC F77 && $(PYTHON2) ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS=$(OPT_FLAGS) --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS=$(OPT_FLAGS) --CFLAGS="-diag-disable=10441" --with-cpp="icc -E -diag-disable=10441"
+	cd $(PETSC_SRC) && unset CXX CC FC F77 && python ./configure --prefix=$(PREFIX) --with-mpi-dir=$(MPI_PREFIX) --download-fblaslapack=1 --FOPTFLAGS=$(OPT_FLAGS) --with-debugging=$(PETSC_DBG) --with-shared-libraries=1 --COPTFLAGS=$(OPT_FLAGS) --CFLAGS="-diag-disable=10441" --with-cpp="icc -E -diag-disable=10441"
 	$(MAKE) -C $(PETSC_SRC) PETSC_DIR=$(PETSC_SRC) PETSC_ARCH=$(PETSC_ARCH) all
 
 install-petsc:

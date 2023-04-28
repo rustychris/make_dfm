@@ -3,8 +3,9 @@ include Makefile.options
 # Generally should not need to edit below here
 
 # petsc requires its configure script run by python 2, which on modern
-# systems is labeled directly
-PYTHON2=python2
+# systems is labeled directly.
+# 2023-04-26: Looks like python 3 is supported now.
+#PYTHON2=python
 F77=$(FC)
 BUILD=$(PREFIX)/build
 
@@ -54,8 +55,8 @@ clean:
 	-rm -rf $(DFM_SRC)
 	-rm -r $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/include $(PREFIX)/conf $(PREFIX)/etc $(PREFIX)/share
 
+include make.hdf5
 include make.netcdf
-
 include make.zlib
 include make.proj
 
@@ -157,6 +158,8 @@ compile-dfm-cmake-debug:
 
 DFM_BUILD_SUFFIX=""
 DFM_CMAKE_BUILD_DIR=$(DFM_SRC)/build_dflowfm$(DFM_BUILD_SUFFIX)
+# Quoting gets weird here. Appears that make will preserve these quotes, so no need
+# to quote in dfm_DoCMake.
 DFM_GENERATOR="Unix Makefiles"
 DFM_BUILDTYPE=Release
 DFM_ENV=CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" CC="$(MPICC)" CXX="$(MPICC)" FFLAGS="-ffree-line-length-512"
@@ -170,7 +173,7 @@ dfm_CreateCMakedir:
 	mkdir  $(DFM_CMAKE_BUILD_DIR)
 
 dfm_DoCMake:
-	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
+	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
 
 dfm_BuildCMake:
 	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) make VERBOSE=1 install

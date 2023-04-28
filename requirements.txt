@@ -1,0 +1,5 @@
+# so far these have not been broadly utilized, just a place to 
+cmake
+# config scripts in petsc 3.13.3 include thread.isAlive() which was dropped in
+# 3.9
+python >= 3.4 < 3.9

@@ -1,0 +1,27 @@
+# Per-build configurable options:
+# Root folder where DFM and supporting libraries will be installed.
+# will create bin, lib, include, etc. subfolders below here
+PREFIX=$(HOME)/src/dfm/t140737
+DFM_ORIG_SRC=$(HOME)/src/dfm/src_t140737
+USE_CMAKE=1
+
+
+# Might need to add this to icc/ifort: -diag-disable=10441
+CC=icc
+CXX=icc
+FC=ifort
+
+# If this is set to something other than $(PREFIX), use a precompiled
+# mpi library
+# HPC1: MPI_PREFIX=/share/apps/openmpi-2.1.2/gcc7
+
+# FARM: have to slightly older intel compiler MPI_PREFIX=/share/apps/intel-2019/
+# This failed to compile petsc.
+# MPI_PREFIX=/share/apps/openmpi-4.0.1/gcc9
+# doesn't even have mpicc, mpifort
+# MPI_PREFIX=/share/apps/intel-2019/impi/2019.0.117/intel64
+
+# 
+
+# OSX, with brew-supplied libuuid, needs this
+# WAQ_LDFLAGS=-L/usr/local/lib
