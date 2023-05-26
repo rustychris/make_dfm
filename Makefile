@@ -61,11 +61,17 @@ DFLOWFMROOT=$(PREFIX)
 
 export PKG_CONFIG_PATH DFLOWFMROOT
 
-MPIF90=$(MPI_PREFIX)/bin/mpif90
-MPICC=$(MPI_PREFIX)/bin/mpicc
+ifneq (,$(find string 'oneapi' $(MPI_PREFIX)))
+  # weirdly, mpif90 would use gfortran
+  MPIF90=$(MPI_PREFIX)/bin/mpiifort
+  MPICC=$(MPI_PREFIX)/bin/mpicc
+else
+  MPIF90=$(MPI_PREFIX)/bin/mpif90
+  MPICC=$(MPI_PREFIX)/bin/mpicc
+endif
 
-OPT ?= -O0 -g # debug build
-# OPT = -O3
+# OPT ?= -O0 -g # debug build
+OPT = -O3 -fpe1 -xhost
 
 # retain .svn directories to aid in version_number.h
 # not sure why, but these copy calls are in some of build scripts, and I think it may
@@ -93,7 +99,9 @@ patch-dfm:
 # and this is only recently (for 2022.03) applicable
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
+	svn patch epshstem.patch "$(DFM_SRC)"
 	cp build-local.sh "$(DFM_SRC)"
+	which module >& /dev/null || cp module-nop.sh $(PREFIX)/bin/module
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm
@@ -117,8 +125,9 @@ compile-dfm-cmake-debug:
 	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm --debug
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm_debug/install/lib/libdflowfm.so
 
+# Had been getting line truncation issues, but this appears to be working.
 compile-dfm-cmake:
-	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) ./build-local.sh dflowfm 
+	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) FC="$(MPIF90)" ./build-local.sh dflowfm 
 	patchelf --add-needed libmetis.so $(DFM_SRC)/build_dflowfm/install/lib/libdflowfm.so
 
 # To recompile after a small edit

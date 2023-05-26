@@ -1,3 +1,7 @@
 Makefile.options
 *~
 *.out
+ftnunit.html
+ftnunit.lst
+ftnunit.run
+petsc.log
