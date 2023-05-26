@@ -1,7 +1,7 @@
 Makefile.options
 *~
 *.out
-ftnunit.html
-ftnunit.lst
-ftnunit.run
 petsc.log
+ftnunit.*
+metis-5.1.0.tar.gz
+

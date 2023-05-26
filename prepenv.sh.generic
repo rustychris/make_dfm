@@ -7,13 +7,16 @@ module load intel-oneapi-compilers
 module unload openmpi
 
 conda activate general
-PREFIX=$CONDA_PREFIX
+PREFIX=/home/rustyh/src/dfm/t140737
 
 
-# export PATH=$PREFIX/bin:$PATH
+export PATH=$PREFIX/bin:$PATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$PREFIX/lib:$LIBRARY_PATH
 
 # If using conda to supply dependencies:
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib
+export LIBRARY_PATH=$LIBRARY_PATH:/lib
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$CONDA_PREFIX/lib/pkgconfig
 export INCLUDE_PATH=$CONDA_PREFIX/include
 

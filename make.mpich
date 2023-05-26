@@ -1,5 +1,10 @@
 build-mpi: build-mpich
 
+# mpich doesn't like conda's extra env variables
+unexport F90
+unexport F77
+unexport F95
+
 MPICH_BUILD=$(BUILD)/mpich
 MPICH_TGZ=$(MPICH_BUILD)/mpich-3.4.2.tar.gz
 MPICH_SRC=$(MPICH_BUILD)/mpich-3.4.2
@@ -37,6 +42,9 @@ unpack-mpich:
 #  but now ch4 is available.  will try that for wclinux. all petsc tests are
 #  failing, revert to ch3:nemesis. Works.
 # Now trying the 'enable-fast' build
+# on farm post-upgrade this is failing to configure test/mpi/dtpools. Appears
+# to attempt to use mpicc wrappers, but nothing is installed yet. *might* be
+# due to interference from openmpi.
 compile-mpich:
 	cd $(MPICH_SRC) && ./configure --prefix=$(PREFIX) --enable-mpi-fortran --with-device=ch3:nemesis --enable-fast=all,O3
 	$(MAKE) -C $(MPICH_SRC)

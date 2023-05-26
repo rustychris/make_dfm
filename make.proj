@@ -1,0 +1,38 @@
+PROJ_BUILD=$(BUILD)/proj
+
+PROJ_URL=https://download.osgeo.org/proj/proj-9.2.0.tar.gz
+PROJ_TGZ=$(PROJ_BUILD)/proj-9.2.0.tar.gz
+PROJ_SRC=$(PROJ_BUILD)/proj-9.2.0
+
+PROJ_BUILD_SUB=$(PROJ_SRC)/build
+
+# Having trouble on Farm with libstdc++ linking. Maybe compile with gnu?
+#CMAKE_OPTIONS=-DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_INSTALL_PREFIX=$(PREFIX)
+CMAKE_OPTIONS=-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_INSTALL_PREFIX=$(PREFIX)
+
+build-proj: unpack-proj compile-proj install-proj
+
+unpack-proj:
+	mkdir -p $(PROJ_BUILD)
+	[ -f $(PROJ_TGZ) ] || wget -O $(PROJ_TGZ) $(PROJ_URL)
+	-[ -d $(PROJ_SRC) ] && rm -r $(PROJ_SRC)
+	cd $(PROJ_BUILD) && tar xzvf $(PROJ_TGZ)
+
+# 2023-04-27: possible that cmake doesn't like the defines during the build
+# step. Unsure why, but in theory it's enough to set CMAKE_OPTIONS just
+# during the configure step
+compile-proj:
+	mkdir -p $(PROJ_BUILD_SUB)
+	cd $(PROJ_BUILD_SUB) && cmake $(CMAKE_OPTIONS) ..
+	cd $(PROJ_BUILD_SUB) && cmake --build . 
+
+#&& CPPFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib" ./configure  --prefix=$(PREFIX)
+#        	$(MAKE) -C $(PROJ_SRC) distclean
+#	cd $(PROJ_SRC) && CPPFLAGS="-I$(PREFIX)/include" LDFLAGS="-L$(PREFIX)/lib" ./configure  --prefix=$(PREFIX)
+# $(MAKE) -C $(PROJ_SRC) 
+
+install-proj:
+	cd $(PROJ_BUILD_SUB) && cmake $(CMAKE_OPTIONS) --build . --target install
+
+
+
