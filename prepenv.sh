@@ -1,19 +1,11 @@
 #!/bin/bash 
 
-# . /share/apps/intel-2019/bin/compilervars.sh intel64
-module unload cmake
-# after the upgrade, maybe this is the way?
-module load intel-oneapi-compilers
-module unload openmpi
+. /opt/intel/oneapi/setvars.sh intel64
 
-conda activate general
-PREFIX=$CONDA_PREFIX
+PREFIX=/opt/dfm/t140737
 
-
-# export PATH=$PREFIX/bin:$PATH
+#export PATH=$PREFIX/bin:/opt/intel/oneapi/mpi/latest/bin:$PATH
+export PATH=$PREFIX/bin:$PATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$PREFIX/lib:$LIBRARY_PATH
-
-# If using conda to supply dependencies:
-export INCLUDE_PATH=$CONDA_PREFIX/include
 
