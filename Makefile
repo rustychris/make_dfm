@@ -3,8 +3,9 @@ include Makefile.options
 # Generally should not need to edit below here
 
 # petsc requires its configure script run by python 2, which on modern
-# systems is labeled directly
+# systems is labeled directly. But newer petsc is compatible with python 3.
 PYTHON2=python2
+PYTHON=python
 F77=$(FC)
 BUILD=$(PREFIX)/build
 

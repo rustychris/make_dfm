@@ -1,0 +1,12 @@
+name: dfm_t141798
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - libnetcdf
+  - zlib
+  - proj
+  - libtiff
+  - gdal
+  - libuuid
+prefix: /opt/anaconda/envs/dfm_t141798
