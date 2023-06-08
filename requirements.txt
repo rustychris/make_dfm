@@ -1,0 +1,10 @@
+# so far these have not been broadly utilized, just a place to 
+cmake
+# config scripts in petsc 3.13.3 include thread.isAlive() which was dropped in
+# 3.9
+# python >= 3.4, <3.9
+# instead, just update petsc to 3.13.6.
+# will need this, and python/scipy doesn't get it for us.
+# except that ifort appears not to like gfortran-generated fortran
+# modules. Instead, try compiling just the fortran bindings.
+# conflicts with netcdf-fortran

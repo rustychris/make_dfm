@@ -1,6 +1,6 @@
 NETCDF_PREFIX ?= $(PREFIX)
 
-ifneq "$(MPI_PREFIX)" "$(PREFIX)"
+ifneq "$(NETCDF_PREFIX)" "$(PREFIX)"
 
 build-netcdf:
 	@echo "Using precompiled netCDF $(NETCDF_PREFIX)"
@@ -8,8 +8,6 @@ build-netcdf:
 else
 
 build-netcdf: build-netcdfc build-netcdff
-
-include make.hdf5
 
 # 4.6.1 might also work with hdf 1.10.
 # It segfaulted with hdf 1.12, and netcdf 4.8.0 failed a test

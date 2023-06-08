@@ -2,10 +2,10 @@ include Makefile.options
 
 # Generally should not need to edit below here
 
-# petsc requires its configure script run by python 2, which on modern
-# systems is labeled directly. But newer petsc is compatible with python 3.
+# older petsc required its configure script run by python 2
 PYTHON2=python2
 PYTHON=python
+
 F77=$(FC)
 BUILD=$(PREFIX)/build
 
@@ -55,8 +55,8 @@ clean:
 	-rm -rf $(DFM_SRC)
 	-rm -r $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/include $(PREFIX)/conf $(PREFIX)/etc $(PREFIX)/share
 
+include make.hdf5
 include make.netcdf
-
 include make.zlib
 include make.proj
 
@@ -86,8 +86,7 @@ else
   MPICC=$(MPI_PREFIX)/bin/mpicc
 endif
 
-# OPT ?= -O0 -g # debug build
-OPT = -O3
+OPT ?= -O3
 
 # retain .svn directories to aid in version_number.h
 # not sure why, but these copy calls are in some of build scripts, and I think it may
@@ -114,12 +113,16 @@ patch-dfm:
 
 # and this is only recently (for 2022.03) applicable
 # dfm_bmi.patch: issue with length of string arguments.
+# sys/sysctl.h: removed in glibc 2.32. Unclear whether this will work
+# drop 	'cp build-local.sh "$(DFM_SRC)"' since we don't use it.
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
+	svn patch epshstem.patch "$(DFM_SRC)"
 	svn patch dfm_bmi.patch "$(DFM_SRC)"
-	cp build-local.sh "$(DFM_SRC)"
 	[ -d $(PREFIX)/bin ] || mkdir -p $(PREFIX)/bin
+	[ -d $(PREFIX)/include/sys ] || mkdir -p $(PREFIX)/include/sys
 	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
+	touch $(PREFIX)/include/sys/sysctl.h
 
 
 #build-dfm: unpack-dfm patch-dfm compile-dfm
@@ -158,6 +161,8 @@ compile-dfm-cmake-debug:
 
 DFM_BUILD_SUFFIX=""
 DFM_CMAKE_BUILD_DIR=$(DFM_SRC)/build_dflowfm$(DFM_BUILD_SUFFIX)
+# Quoting gets weird here. Appears that make will preserve these quotes, so no need
+# to quote in dfm_DoCMake.
 DFM_GENERATOR="Unix Makefiles"
 DFM_BUILDTYPE=Release
 DFM_ENV=CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" CC="$(MPICC)" CXX="$(MPICC)" FFLAGS="-ffree-line-length-512"
@@ -171,7 +176,7 @@ dfm_CreateCMakedir:
 	mkdir  $(DFM_CMAKE_BUILD_DIR)
 
 dfm_DoCMake:
-	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
+	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
 
 dfm_BuildCMake:
 	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) make VERBOSE=1 install
@@ -198,7 +203,6 @@ dfm_InstallAll:
 #         cp -rf $root/src/third_party_open/esmf/lnx64/bin/lib*                                          $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin      &>/dev/null
 #         cp -rf $root/src/third_party_open/esmf/lnx64/bin_COS7/lib*                                     $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7 &>/dev/null
 #     fi
-
 
 # To recompile after a small edit
 recompile-dfm:

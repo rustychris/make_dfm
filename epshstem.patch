@@ -1,0 +1,15 @@
+Index: src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/compute/s1ini.f90
+===================================================================
+--- src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/compute/s1ini.f90	(revision 141645)
++++ src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/compute/s1ini.f90	(working copy)
+@@ -75,7 +75,9 @@
+           Qrain = rain(k)*bare(k)*1d-3/(24d0*3600d0)          ! mm/day => m3/s
+           if (Qrain  > 0) then
+              qinrain = qinrain + Qrain                        ! rain can be pos or neg, to allow for prescribed evaporation
+-          else if (hs(k) > epshu) then
++          else if (hs(k) > epshstem) then
++             ! RH: use epshstem for evaporation threshold. Makes it independent of epshu, and
++             ! more consistent with naming.
+              Qrain   = - min(0.5d0*vol1(k)/dts , -Qrain)
+              qouteva = qouteva - Qrain
+           else
