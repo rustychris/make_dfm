@@ -9,8 +9,6 @@ else
 
 build-netcdf: build-netcdfc build-netcdff
 
-include make.hdf5
-
 # 4.6.1 might also work with hdf 1.10.
 # It segfaulted with hdf 1.12, and netcdf 4.8.0 failed a test
 # with 1.12.
