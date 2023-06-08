@@ -1,11 +1,22 @@
 #!/bin/bash 
 
+conda activate dfm_t141798
 . /opt/intel/oneapi/setvars.sh intel64
 
-PREFIX=/opt/dfm/t140737
+# Conda doesn't necessarily add this.
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$CONDA_PREFIX/lib/pkgconfig
 
-#export PATH=$PREFIX/bin:/opt/intel/oneapi/mpi/latest/bin:$PATH
+# Once tested, this could be the conda prefix.
+# PREFIX=$CONDA_PREFIX
+# Until then, have to add conda paths to help compilation.
+PREFIX=/opt/software/delft/dfm/t141798
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=$CONDA_PREFIX/lib:$LIBRARY_PATH
+#
+
 export PATH=$PREFIX/bin:$PATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$PREFIX/lib:$LIBRARY_PATH
+# This was in an older attempt, not sure if it's still necessary.
+export INCLUDE_PATH=$CONDA_PREFIX/include
 

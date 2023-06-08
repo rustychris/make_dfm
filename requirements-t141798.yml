@@ -5,8 +5,10 @@ channels:
 dependencies:
   - libnetcdf
   - zlib
-  - proj
+  - proj <8.0
   - libtiff
   - gdal
   - libuuid
+  - subversion
+# and cmake if the system doesn't have a modern cmake installed.
 prefix: /opt/anaconda/envs/dfm_t141798

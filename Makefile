@@ -159,30 +159,42 @@ compile-dfm-cmake-debug:
 # compile-dwaq-cmake:
 # 	cd "$(DFM_SRC)" && PREFIX=$(PREFIX) CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" FFLAGS="-ffree-line-length-512" ./build-local.sh dwaq --debug
 
+# shell script adds debug suffix. Will just keep it the same.
 DFM_BUILD_SUFFIX=""
 DFM_CMAKE_BUILD_DIR=$(DFM_SRC)/build_dflowfm$(DFM_BUILD_SUFFIX)
+DWAQ_CMAKE_BUILD_DIR=$(DFM_SRC)/build_dwaq$(DFM_BUILD_SUFFIX)
+
 # Quoting gets weird here. Appears that make will preserve these quotes, so no need
 # to quote in dfm_DoCMake.
 DFM_GENERATOR="Unix Makefiles"
-DFM_BUILDTYPE=Release
+DFM_BUILDTYPE?=Release
 DFM_ENV=CFLAGS="-I$(CONDA_PREFIX)/include" FC="$(MPIF90)" CC="$(MPICC)" CXX="$(MPICC)" FFLAGS="-ffree-line-length-512"
 
 # configurationType is "dflowfm"
 # This line is the equivalent of build-local.sh dflowfm
-compile-dfm-cmake: dfm_CreateCMakedir dfm_DoCMake dfm_BuildCMake dfm_InstallAll
+compile-dfm-cmake: dfm_CreateCMakedir dfm_DoCMake dfm_BuildCMake install-dfm
+compile-dwaq-cmake: dwaq_CreateCMakedir dwaq_DoCMake dwaq_BuildCMake install-dwaq
 
 dfm_CreateCMakedir:
 	rm -rf $(DFM_CMAKE_BUILD_DIR)
 	mkdir  $(DFM_CMAKE_BUILD_DIR)
 
+dwaq_CreateCMakedir:
+	rm -rf $(DWAQ_CMAKE_BUILD_DIR)
+	mkdir  $(DWAQ_CMAKE_BUILD_DIR)
+
 dfm_DoCMake:
 	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
+
+dwaq_DoCMake:
+	cd $(DWAQ_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dwaq" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
 
 dfm_BuildCMake:
 	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) make VERBOSE=1 install
 
-dfm_InstallAll:
-	echo "makefile does not do the InstallAll business"
+dwaq_BuildCMake:
+	cd $(DWAQ_CMAKE_BUILD_DIR) && $(DFM_ENV) make VERBOSE=1 install
+
 
 #     if [ ${1} = "all"  ]; then
 #         echo
@@ -216,10 +228,8 @@ recompile-dfm-cmake: dfm_BuildCMake dfm_InstallAll
 # TODO: Really should only copy the libraries that are required. DFM decides to "install"
 # every binary dependency it can find.
 install-dfm:
-	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dflowfm/install/ $(PREFIX)
+	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(DFM_CMAKE_BUILD_DIR)/install/ $(PREFIX)
 
 install-dwaq:
-	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dwaq/install/ $(PREFIX)
+	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(DWAQ_CMAKE_BUILD_DIR)/install/ $(PREFIX)
 
-install-dwaq-debug:
-	rsync -rvPl --exclude 'libc.*' --exclude 'libc-*.so' $(PREFIX)/build/dfm/src/build_dwaq_debug/install/ $(PREFIX)
