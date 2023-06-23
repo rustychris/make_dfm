@@ -1,0 +1,20 @@
+Index: src/engines_gpl/waq/packages/waq_kernel/src/delwaq2.f
+===================================================================
+--- src/engines_gpl/waq/packages/waq_kernel/src/delwaq2.f	(revision 141798)
++++ src/engines_gpl/waq/packages/waq_kernel/src/delwaq2.f	(working copy)
+@@ -337,8 +337,12 @@
+      &                 filtype, gridps , dlwqd  , ierr   )
+ !
+          if (mypart .eq. 1) then
+-            CLOSE ( LUNIN )
+-            IF ( IERR .GT. 0 ) GOTO 992
++! RH: appears that no code paths would have lunin open at this point.
++!     but possible that LUNIN has a unit number that has since been
++!     reused for another file that *is* still open. In that case this
++!     close is problematic.            
++!            CLOSE ( LUNIN )
++!            IF ( IERR .GT. 0 ) GOTO 992
+ !
+ !        end of initialisation
+ !
+ 
