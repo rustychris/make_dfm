@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-conda activate dfm_t140737
+conda activate dfm_t140737b
 . /opt/intel/oneapi/setvars.sh intel64
 
 # Conda doesn't necessarily add this.

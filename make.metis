@@ -1,5 +1,5 @@
 METIS_BUILD=$(BUILD)/metis
-
+METIS_SRC=$(METIS_BUILD)/metis
 METIS_TAG=v5.1.1-DistDGL-v0.5
 
 build-metis: clone-metis compile-metis install-metis
