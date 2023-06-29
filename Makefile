@@ -31,7 +31,14 @@ ifeq ($(UNAME_S),Darwin)
     endif
 endif
 
-all: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
+ifneq "$(CONDA_PREFIX)" ""
+all: all-conda
+else
+all: all-noconda
+endif
+
+
+all-noconda: build-hdf5 build-netcdf build-mpi build-petsc build-metis build-dfm
 
 # Conda setup provides hdf5, netcdfc, and we build the rest.
 all-conda: build-netcdff build-mpi build-petsc build-metis build-dfm

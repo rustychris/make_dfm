@@ -1,24 +1,38 @@
 #!/bin/bash 
 
+
+# Option A: Use conda. Activate here:
 conda activate dfm_t140737b
+export PREFIX=$CONDA_PREFIX
+# End option A
+
+# Option B: Without conda. Make sure no conda environment is active.
+# while [ ! -z $CONDA_PREFIX ]; do conda deactivate; done
+# export PREFIX=CHOOSE_A_FOLDER
+# End option B
+
+# Configure Intel compilers
 . /opt/intel/oneapi/setvars.sh intel64
 
-# Conda doesn't necessarily add this.
-export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$CONDA_PREFIX/lib/pkgconfig
+# ----------- Shouldn't need to change things below here ---------------
 
-# Once tested, this could be the conda prefix.
-PREFIX=$CONDA_PREFIX
-export PREFIX
-# During development can be cleaner to keep prefix separate.
-# PREFIX=/opt/software/delft/dfm/t141798
-# export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-# export LIBRARY_PATH=$CONDA_PREFIX/lib:$LIBRARY_PATH
+if [ ! -z "$CONDA_PREFIX" ]; then
+    # Conda doesn't necessarily add this.
+    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$CONDA_PREFIX/lib/pkgconfig
+    # This was in an older attempt, not sure if it's still necessary.
+    export INCLUDE_PATH=$CONDA_PREFIX/include
+fi
 
 
+if [ ! -z "$CONDA_PREFIX" ]; then
+    if [ "$CONDA_PREFIX" -ne "$PREFIX"] ; then
+       export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+       export LIBRARY_PATH=$CONDA_PREFIX/lib:$LIBRARY_PATH
+    fi
+fi
+       
 export PATH=$PREFIX/bin:$PATH
 export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=$PREFIX/lib:$LIBRARY_PATH
 
-# This was in an older attempt, not sure if it's still necessary.
-export INCLUDE_PATH=$CONDA_PREFIX/include
 

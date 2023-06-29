@@ -27,12 +27,13 @@ Clone this repository to get the makefiles, scripts, and patches:
 
 The scripts also compile some key dependencies. There are two main approaches: with or without conda. 
 
-## Option A: Using Conda
+## Choose With or Without Conda
+
+### Option A: with conda
+
 Conda can be used to provide HDF5 and the base netcdf library (C bindings only). This is particularly useful because together these packages have a long list of dependencies that a barebones system will not include.
 
-### Install conda (this can be anaconda, miniconda, or mambaforge)
-
-Choose a suitable requirements-*.yml file, copy, and edit to suit your needs. Edit to update the environment name and path. If cmake does not already exist on the system, add it to the package list.
+Install conda (this can be anaconda, miniconda, or mambaforge). Choose a suitable requirements-*.yml file, copy, and edit to suit your needs. Edit to update the environment name and path. If cmake does not already exist on the system, add it to the package list.
 
 Create the new environment:
 `…/make_dfm$ mamba env create -f requirements-t140737.yml`
@@ -41,27 +42,33 @@ Create the new environment:
 
 This will install way more stuff than you would imagine is necessary.
  
-Edit prepenv.sh to reference the conda environment you just created. By default DFM wil be installed to the same location as the environment (PREFIX=$CONDA_PREFIX), but a different PREFIX can be specified if desired.
+Edit prepenv.sh. Make sure the 'Option A' section is not commented out and the 'Option B' section is commented. Edit the `conda activate` command to reference the conda environment you just created. By default DFM wil be installed to the same location as the environment (PREFIX=$CONDA_PREFIX), but a different PREFIX can be specified if desired.
 
-## Option B: Without Conda
-Alternatively, the makefiles do include recipes for HDF5 and netcdf, but they do not include recipes for the supporting libraries (e.g. libtiff). You may need to install or compile additional libraries like zlib, libtiff, libjpeg, etc.
+### Option B: without conda
 
-Edit prepenv.sh to m and choose a prefix for where the builds and binaries will go. Check path for intel compilers. The current (2023-06-23) version of prepenv.sh in git uses conda, so you’ll have to compare against some of the other prepenv*.sh scripts and edit paths accordingly.
+The makefiles do include recipes for HDF5 and netcdf, but they do not include recipes for the supporting libraries (e.g. libtiff). You may need to install or compile additional libraries like zlib, libtiff, libjpeg, etc. using a system package manager.
 
+Edit prepenv.sh. Make sure the 'Option A' section is commented and 'Option B' section is not commented. Set the path prefix (PREFIX) for where the builds and binaries will go.
 
-You may need to update the compiler setup command if Intel oneAPI is installed in a nonstandard place. 
+## Intel compilers and other settings
+Check path for intel compilers. You may need to update the compiler setup command if Intel oneAPI is installed in a nonstandard place. 
 
 Additional makefile variables beyond the shell variables in prepenv.sh are configurable in Makefile.options.
 In particular, the location of the DFM source needs to be set here. Compiler flags (i.e. debugging vs. optimized build) can be set here or in the individual recipes for components (the is not well-organized at the moment).
+
+## Compiling
 
 Start the compilation process by initializing:
 `. ./prepenv.sh`
 
 If you’re feeling lucky, the entire process can be run with this:
 ```
-make all-conda
+make all
 ```
-More often than not something will go wrong. Going step-by-step can make it easier to figure out what’s broken:
+
+
+More often than not something will go wrong. Going step-by-step can make it easier to figure out what’s broken. If using conda, the
+steps are:
 ```
 make build-netcdff (Note ‘ff’ not ‘f’)
 make build-mpi
@@ -70,20 +77,7 @@ make build-metis
 make build-dfm
 ```
 
-Using the installed files should be as simple as activating the conda environment:	
-`conda activate dfm_tWHATEVER`
-If you need to copy the install to a new folder or to a new machine, it might work. You will almost certainly need to add the the …/lib path to LD_LIBRARY_PATH. Conda will embed the installation path into some of the libraries, but LD_LIBRARY_PATH will generally let the system find the libraries in the new path.
-
-
-
-
-
-
-If you’re feeling lucky:
-```
-make all
-```
-Or step by step:
+If *not* using conda
 ```
 make build-hdf5
 make build-netcdf
@@ -93,7 +87,15 @@ make build-metis
 make build-dfm
 ```
 
-To use the binaries when installed without conda, you’ll need to set LD_LIBRARY_PATH to PREFIX/lib, and reference the executables with full path (or add PREFIX/bin to PATH).
+
+To actually use the installation: `. prepenv.sh`
+(Alternatively, set LD_LIBRARY_PATH to PREFIX/lib, and reference the executables with full path (or add PREFIX/bin to PATH).
+If using conda, it should be sufficient to instead just activate the environment.
+
+
+If you need to copy the install to a new folder or to a new machine, it might work. You will almost certainly need to add the the …/lib path to LD_LIBRARY_PATH. Conda will embed the installation path into some of the libraries, but LD_LIBRARY_PATH will generally let the system find the libraries in the new path.
+
+
 
  
 # Older Notes
