@@ -21,8 +21,7 @@ Sample checkout:
 It can take a while to download the first time. Subsequent updates using svn switch are much faster.
  
 # Compilation Scripts & Makefile
-An evolving set of makefiles and patches are in this git repository:
-https://github.com/rustychris/make_dfm
+Clone this repository to get the makefiles, scripts, and patches:
 
 `git clone https://github.com/rustychris/make_dfm`
 
@@ -33,7 +32,7 @@ Conda can be used to provide HDF5 and the base netcdf library (C bindings only).
 
 ### Install conda (this can be anaconda, miniconda, or mambaforge)
 
-Copy and edit requirements-t141798.yml (the repo may have some requirements files if different package versions are needed for specific situations). Edit to update the environment name and path. If cmake does not already exist on the system, add it to the package list.
+Choose a suitable requirements-*.yml file, copy, and edit to suit your needs. Edit to update the environment name and path. If cmake does not already exist on the system, add it to the package list.
 
 Create the new environment:
 `…/make_dfm$ mamba env create -f requirements-t140737.yml`
@@ -42,7 +41,15 @@ Create the new environment:
 
 This will install way more stuff than you would imagine is necessary.
  
-Edit prepenv.sh to reference the conda environment you just created. You may need to update the compiler setup command if Intel oneAPI is installed in a nonstandard place. It is possible to have the scripts install to the same prefix as the conda environment or a different prefix. Using the same prefix is usually simplest, i.e. PREFIX=$CONDA_PREFIX
+Edit prepenv.sh to reference the conda environment you just created. By default DFM wil be installed to the same location as the environment (PREFIX=$CONDA_PREFIX), but a different PREFIX can be specified if desired.
+
+## Option B: Without Conda
+Alternatively, the makefiles do include recipes for HDF5 and netcdf, but they do not include recipes for the supporting libraries (e.g. libtiff). You may need to install or compile additional libraries like zlib, libtiff, libjpeg, etc.
+
+Edit prepenv.sh to m and choose a prefix for where the builds and binaries will go. Check path for intel compilers. The current (2023-06-23) version of prepenv.sh in git uses conda, so you’ll have to compare against some of the other prepenv*.sh scripts and edit paths accordingly.
+
+
+You may need to update the compiler setup command if Intel oneAPI is installed in a nonstandard place. 
 
 Additional makefile variables beyond the shell variables in prepenv.sh are configurable in Makefile.options.
 In particular, the location of the DFM source needs to be set here. Compiler flags (i.e. debugging vs. optimized build) can be set here or in the individual recipes for components (the is not well-organized at the moment).
@@ -67,15 +74,10 @@ Using the installed files should be as simple as activating the conda environmen
 `conda activate dfm_tWHATEVER`
 If you need to copy the install to a new folder or to a new machine, it might work. You will almost certainly need to add the the …/lib path to LD_LIBRARY_PATH. Conda will embed the installation path into some of the libraries, but LD_LIBRARY_PATH will generally let the system find the libraries in the new path.
 
-## Option B: Without Conda
-Alternatively, the makefiles do include recipes for HDF5 and netcdf, but they do not include recipes for the supporting libraries (e.g. libtiff). You may need to install or compile additional libraries like zlib, libtiff, libjpeg, etc.
 
-Edit prepenv.sh and choose a prefix for where the builds and binaries will go. Check path for intel compilers. The current (2023-06-23) version of prepenv.sh in git uses conda, so you’ll have to compare against some of the other prepenv*.sh scripts and edit paths accordingly.
 
-Additional makefile variables are configurable in Makefile.options, beyond the shell variables set in prepenv.sh. In particular, the location of the DFM source checkout needs to be set here. 
 
-Initialize the environment:
-`. ./prepenv.sh`
+
 
 If you’re feeling lucky:
 ```
