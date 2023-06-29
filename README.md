@@ -33,7 +33,7 @@ The scripts also compile some key dependencies. There are two main approaches: w
 
 Conda can be used to provide HDF5 and the base netcdf library (C bindings only). This is particularly useful because together these packages have a long list of dependencies that a barebones system will not include.
 
-Install conda (this can be anaconda, miniconda, or mambaforge). Choose a suitable requirements-*.yml file, copy, and edit to suit your needs. Edit to update the environment name and path. If cmake does not already exist on the system, add it to the package list.
+Install conda (this can be anaconda, miniconda, or mambaforge). Choose a suitable requirements-*.yml file, copy, and edit to suit your needs. In particular, edit to update the environment name. If cmake does not already exist on the system, add it to the package list.
 
 Create the new environment:
 `…/make_dfm$ mamba env create -f requirements-t140737.yml`
@@ -90,11 +90,10 @@ make build-dfm
 
 To actually use the installation: `. prepenv.sh`
 (Alternatively, set LD_LIBRARY_PATH to PREFIX/lib, and reference the executables with full path (or add PREFIX/bin to PATH).
-If using conda, it should be sufficient to instead just activate the environment.
+Even if using conda, it is not currently sufficient to only activate the environment. 
 
 
 If you need to copy the install to a new folder or to a new machine, it might work. You will almost certainly need to add the the …/lib path to LD_LIBRARY_PATH. Conda will embed the installation path into some of the libraries, but LD_LIBRARY_PATH will generally let the system find the libraries in the new path.
-
 
 
  

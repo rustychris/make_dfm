@@ -11,5 +11,6 @@ dependencies:
   - libuuid
   - subversion
 # and cmake if the system doesn't have a modern cmake installed.
-prefix: /opt/miniconda3/envs/dfm_t140737
-
+# Note that environment creation may not use this path -- better to
+# explicitly specify this on the commandline.
+# prefix: /opt/software/delft/dfm/t140737
