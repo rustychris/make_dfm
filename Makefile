@@ -197,6 +197,10 @@ dwaq_CreateCMakedir:
 dfm_DoCMake:
 	cd $(DFM_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dflowfm" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
 
+# How to edit the compiler flags, to add "-fp-model precise" ?
+# The relevant line is in $PREFIX/build/dfm/src/src/cmake/compiler_options/intel.cmake
+#     set(CMAKE_Fortran_FLAGS_RELEASE  "-O2 -fPIC")
+# Unclear how to do this from the command line, but patching intel.cmake works
 dwaq_DoCMake:
 	cd $(DWAQ_CMAKE_BUILD_DIR) && $(DFM_ENV) cmake -G $(DFM_GENERATOR) -B "." -D CONFIGURATION_TYPE="dwaq" -D CMAKE_BUILD_TYPE=${DFM_BUILDTYPE} ../src/cmake 
 

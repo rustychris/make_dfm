@@ -2,7 +2,7 @@
 
 
 # Option A: Use conda. Activate here:
-conda activate dfm_t140737
+conda activate dfm_t141798opt
 export PREFIX=$CONDA_PREFIX
 # End option A
 

@@ -1,0 +1,14 @@
+name: dfm_t141798opt
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - libnetcdf
+  - zlib
+  - proj <8.0
+  - libtiff
+  - gdal
+  - libuuid
+  - subversion
+# and cmake if the system doesn't have a modern cmake installed.
+# I think prefix can be omitted.

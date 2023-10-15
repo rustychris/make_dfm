@@ -68,6 +68,7 @@ NCF_LDFLAGS=-L$(PREFIX)/lib
 NCF_LD_LIBRARY_PATH="$(PREFIX)/lib:$(LD_LIBRARY_PATH)"
 endif
 
+# 2023-10-11: Not sure we are passing CFLAGS and FCFLAGS with -g -O0
 compile-netcdff:
 	cd $(NCF_SRC) && CPPFLAGS="$(NCF_CPPFLAGS)" CFLAGS="-g -O0" FCFLAGS="-g -O0" LDFLAGS="$(NCF_LDFLAGS)" LD_LIBRARY_PATH="$(NCF_LD_LIBRARY_PATH)" ./configure --prefix=$(PREFIX)
 	$(MAKE) -C $(NCF_SRC)
