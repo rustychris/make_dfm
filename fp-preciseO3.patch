@@ -1,0 +1,26 @@
+Index: src/cmake/compiler_options/intel.cmake
+===================================================================
+--- src/cmake/compiler_options/intel.cmake	(revision 141798)
++++ src/cmake/compiler_options/intel.cmake	(working copy)
+@@ -39,11 +39,11 @@
+     message(STATUS "Setting optional Fortran compiler flags in Unix")
+     # On Linux preprocessing is on by default, but the flag is inserted for
+     # at least one C file as well (netCDF). Use a neutral flag to avoid problems
+-    set(CMAKE_CXX_FLAGS_RELEASE      "-O2 -fPIC")
+-    set(CMAKE_C_FLAGS_RELEASE        "-O2 -fPIC")
++    set(CMAKE_CXX_FLAGS_RELEASE      "-O3 -fPIC -fp-model precise -fpe3")
++    set(CMAKE_C_FLAGS_RELEASE        "-O3 -fPIC -fp-model precise -fpe3")
+     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC")
+     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC")
+-    set(CMAKE_Fortran_FLAGS_RELEASE  "-O2 -fPIC")
++    set(CMAKE_Fortran_FLAGS_RELEASE  "-O3 -fPIC -fp-model precise")
+     set(CMAKE_Fortran_FLAGS_DEBUG    "-g -O0 -fPIC")
+ 
+     set(cpp_compiler_flags "-std=c++11")
+@@ -62,5 +62,5 @@
+ endif(UNIX)
+ 
+ set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
+-set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${traceback_flag})
++set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag})
+ set(waq_debug_flags) # WAQ specific debug flags are currently empty (moved to general debug flags)

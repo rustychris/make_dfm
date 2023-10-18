@@ -126,11 +126,14 @@ patch-dfm:
 # dwaq_lun19.patch: extraneous close call collides with other file.
 # sys/sysctl.h: removed in glibc 2.32. Unclear whether this will work
 # drop 	'cp build-local.sh "$(DFM_SRC)"' since we don't use it.
+# fp-precise(O3)?.patch: force precise floating point semantics. O3 version also
+#    forces more optimization and no tracebacks.
 patch-dfm-cmake:
 	svn patch cmake_use_mpich.patch "$(DFM_SRC)"
 	svn patch epshstem.patch "$(DFM_SRC)"
 	svn patch dfm_bmi.patch "$(DFM_SRC)"
 	svn patch dwaq_lun19.patch "$(DFM_SRC)"
+	svn patch fp-preciseO3.patch "$(DFM_SRC)"
 	[ -d $(PREFIX)/bin ] || mkdir -p $(PREFIX)/bin
 	[ -d $(PREFIX)/include/sys ] || mkdir -p $(PREFIX)/include/sys
 	which module > /dev/null 2>&1 || cp module-nop.sh $(PREFIX)/bin/module
