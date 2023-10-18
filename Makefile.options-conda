@@ -1,0 +1,29 @@
+# Per-build configurable options:
+# Root folder where DFM and supporting libraries will be installed.
+# will create bin, lib, include, etc. subfolders below here
+
+DFM_ORIG_SRC=/my/path/to/dfm/src
+
+# gnu compilers less tested with recent DFM, compile issues likely.
+#CC=gcc
+#CXX=g++
+#FC=gfortran
+
+# classic compiler - deprecated, but tested
+CC=icc
+CXX=icc
+FC=ifort
+
+# New intel compiler failed tests with HDF5.
+# https://forum.hdfgroup.org/t/hdf5-failed-to-configure-with-new-intel-compilers/10763/2
+# HDF have not ported their code to these compilers, but expect to do so ~ spring 2023.
+# CC=icx
+# CXX=icpx
+# FC=ifx
+
+# If this is set and is distinct from $(PREFIX), use a precompiled
+# mpi library
+MPI_PREFIX=$(PREFIX)
+
+# Defaults to Release
+# DFM_BUILDTYPE=Debug
